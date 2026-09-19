@@ -22,7 +22,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'outbound_schedule_id' => ['required', 'exists:schedules,id'],
-            'return_schedule_id' => ['nullable', 'exists:schedules,id'],
+            'return_schedule_id' => ['nullable', 'required_if:trip_type,ROUND_TRIP', 'exists:schedules,id'],
             'trip_type' => ['required', 'in:ONE_WAY,ROUND_TRIP'],
             'passengers' => ['required', 'integer', 'min:1', 'max:6'],
         ]);
@@ -62,12 +62,12 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'outbound_schedule_id' => ['required', 'exists:schedules,id'],
-            'return_schedule_id' => ['nullable', 'exists:schedules,id'],
+            'return_schedule_id' => ['nullable', 'required_if:trip_type,ROUND_TRIP', 'exists:schedules,id'],
             'trip_type' => ['required', 'in:ONE_WAY,ROUND_TRIP'],
             'passengers' => ['required', 'integer', 'min:1', 'max:6'],
             'outbound_seats' => ['required', 'array'],
             'outbound_seats.*' => ['exists:vehicle_seats,id'],
-            'return_seats' => ['nullable', 'array'],
+            'return_seats' => ['nullable', 'required_if:trip_type,ROUND_TRIP', 'array'],
             'return_seats.*' => ['exists:vehicle_seats,id'],
         ]);
 
@@ -76,7 +76,8 @@ class BookingController extends Controller
             return back()->with('error', "Silakan pilih tepat {$passengersCount} kursi untuk keberangkatan.");
         }
 
-        if ($validated['trip_type'] === 'ROUND_TRIP' && count($validated['return_seats'] ?? []) !== $passengersCount) {
+        $isRoundTrip = $validated['trip_type'] === 'ROUND_TRIP' && ! empty($validated['return_schedule_id']);
+        if ($isRoundTrip && count($validated['return_seats'] ?? []) !== $passengersCount) {
             return back()->with('error', "Silakan pilih tepat {$passengersCount} kursi untuk kepulangan.");
         }
 
@@ -85,7 +86,7 @@ class BookingController extends Controller
 
         $returnSchedule = null;
         $returnSeats = collect();
-        if ($validated['trip_type'] === 'ROUND_TRIP' && ! empty($validated['return_schedule_id'])) {
+        if ($isRoundTrip) {
             $returnSchedule = Schedule::with(['route', 'vehicle'])->findOrFail($validated['return_schedule_id']);
             $returnSeats = VehicleSeat::whereIn('id', $validated['return_seats'])->get();
         }

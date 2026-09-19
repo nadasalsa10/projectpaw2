@@ -26,9 +26,9 @@
             <div class="bg-blue-50/50 rounded-2xl border border-blue-100 p-4 text-center mb-6 flex flex-col items-center">
                 <span class="text-xs font-bold text-gray-700 mb-2">Scan QR Ini Kepada Driver Saat Boarding</span>
                 <div class="bg-white p-3 rounded-2xl shadow-md border border-gray-200">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($ticket->qr_code_hash) }}" alt="QR Code Ticket" class="w-40 h-40 object-contain mx-auto">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode($ticket->qr_code_hash ?? $ticket->ticket_code) }}" alt="QR Code Ticket" class="w-40 h-40 object-contain mx-auto">
                 </div>
-                <span class="text-[10px] text-gray-400 font-mono mt-2 truncate w-full px-4">Hash Verification: {{ substr($ticket->qr_code_hash, 0, 24) }}...</span>
+                <span class="text-[10px] text-gray-400 font-mono mt-2 truncate w-full px-4">Hash Verification: {{ substr($ticket->qr_code_hash ?? $ticket->ticket_code, 0, 24) }}...</span>
             </div>
 
             <!-- Route Banner -->
@@ -41,7 +41,7 @@
                     <div>
                         <i class="fa-solid fa-van-shuttle text-blue-600 text-xl"></i>
                         @if($ticket->schedule?->route?->duration_minutes)
-                            <span class="text-[10px] block text-gray-400 font-semibold">{{ floor($ticket->schedule->route->duration_minutes / 60) }}j {{ $ticket->schedule->route->duration_minutes % 60 }}m</span>
+                            <span class="text-[10px] block text-gray-400 font-semibold">{{ floor(($ticket->schedule?->route?->duration_minutes ?? 0) / 60) }}j {{ ($ticket->schedule?->route?->duration_minutes ?? 0) % 60 }}m</span>
                         @endif
                     </div>
                     <div class="text-right">
@@ -96,9 +96,11 @@
                     <i class="fa-solid fa-print"></i>
                     <span>Cetak Tiket</span>
                 </button>
-                <a href="{{ route('customer.orders.show', $ticket->booking_id) }}" class="text-xs text-blue-600 font-bold hover:underline">
-                    Kembali Ke Detail Pesanan
-                </a>
+                @if($ticket->booking_id)
+                    <a href="{{ route('customer.orders.show', $ticket->booking_id) }}" class="text-xs text-blue-600 font-bold hover:underline">
+                        Kembali Ke Detail Pesanan
+                    </a>
+                @endif
             </div>
         </div>
     </div>

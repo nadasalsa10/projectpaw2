@@ -154,6 +154,18 @@ class DriverTest extends TestCase
         $this->assertTrue($this->ticket->is_checked_in);
     }
 
+    public function test_driver_can_checkin_passenger_via_web_form(): void
+    {
+        $this->actingAs($this->driverUser);
+
+        $checkinResponse = $this->post("/driver/checkin/{$this->ticket->id}");
+        $checkinResponse->assertRedirect();
+        $checkinResponse->assertSessionHas('success');
+
+        $this->ticket->refresh();
+        $this->assertTrue($this->ticket->is_checked_in);
+    }
+
     public function test_driver_can_update_trip_status(): void
     {
         $this->actingAs($this->driverUser);

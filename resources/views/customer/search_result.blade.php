@@ -38,7 +38,7 @@
                         
                         @if(!$isFull)
                             <label class="absolute inset-0 z-10 cursor-pointer">
-                                <input type="radio" name="outbound_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
+                                <input type="radio" name="outbound_schedule_id" value="{{ $sch->id }}" required {{ $loop->first ? 'checked' : '' }} class="hidden peer">
                                 <div class="peer-checked:border-blue-600 peer-checked:bg-blue-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
                             </label>
                         @endif
@@ -111,7 +111,7 @@
                             
                             @if(!$isFull)
                                 <label class="absolute inset-0 z-10 cursor-pointer">
-                                    <input type="radio" name="return_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
+                                    <input type="radio" name="return_schedule_id" value="{{ $sch->id }}" {{ $searchParams['trip_type'] === 'ROUND_TRIP' ? 'required' : '' }} {{ $loop->first ? 'checked' : '' }} class="hidden peer">
                                     <div class="peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
                                 </label>
                             @endif

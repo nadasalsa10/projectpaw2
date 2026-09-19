@@ -45,10 +45,10 @@
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                         <h3 class="font-bold text-gray-900 text-base">
-                            {{ $sch?->route->origin }} <i class="fa-solid fa-arrow-right text-xs mx-1 text-blue-600"></i> {{ $sch?->route->destination }}
+                            {{ $sch?->route?->origin ?? '-' }} <i class="fa-solid fa-arrow-right text-xs mx-1 text-blue-600"></i> {{ $sch?->route?->destination ?? '-' }}
                         </h3>
                         <p class="text-xs text-gray-500 mt-1">
-                            <i class="fa-regular fa-clock mr-1"></i> Keberangkatan: {{ $sch?->departure_time->format('d M Y - H:i') }} WIB
+                            <i class="fa-regular fa-clock mr-1"></i> Keberangkatan: {{ $sch?->departure_time ? $sch->departure_time->format('d M Y - H:i') : '-' }} WIB
                         </p>
                         <p class="text-xs font-bold text-emerald-600 mt-1">
                             Rp {{ number_format($b->total_amount, 0, ',', '.') }}
@@ -93,9 +93,9 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="font-bold text-gray-900 text-sm">
-                            {{ $sch?->route->origin }} → {{ $sch?->route->destination }}
+                            {{ $sch?->route?->origin ?? '-' }} → {{ $sch?->route?->destination ?? '-' }}
                         </h3>
-                        <p class="text-xs text-gray-500 mt-0.5">{{ $sch?->departure_time->format('d M Y - H:i') }} WIB</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ $sch?->departure_time ? $sch->departure_time->format('d M Y - H:i') : '-' }} WIB</p>
                     </div>
                     <a href="{{ route('customer.orders.show', $b->id) }}" class="text-xs font-bold text-blue-600 hover:underline">
                         Lihat Detail

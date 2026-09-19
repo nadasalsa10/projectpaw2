@@ -39,33 +39,38 @@ class ScanController extends Controller
         }
 
         // Check if ticket schedule belongs to this driver
-        if ($ticket->schedule->driver_id !== $driver->id) {
+        if ($ticket->schedule?->driver_id !== $driver->id) {
             return response()->json([
                 'valid' => false,
                 'message' => 'Tiket ini bukan untuk jadwal perjalanan Anda!',
                 'ticket' => [
                     'ticket_code' => $ticket->ticket_code,
-                    'passenger' => $ticket->passenger->name,
-                    'route' => $ticket->schedule->route->origin.' → '.$ticket->schedule->route->destination,
-                    'departure_time' => $ticket->schedule->departure_time->format('d M Y H:i'),
+                    'passenger' => $ticket->passenger?->name ?? 'Penumpang',
+                    'route' => ($ticket->schedule?->route?->origin ?? '-').' → '.($ticket->schedule?->route?->destination ?? '-'),
+                    'departure_time' => $ticket->schedule?->departure_time ? $ticket->schedule->departure_time->format('d M Y H:i') : '-',
                 ],
             ], 403);
         }
+
+        $origin = $ticket->schedule?->route?->origin ?? 'Asal';
+        $destination = $ticket->schedule?->route?->destination ?? 'Tujuan';
+        $seatNum = $ticket->bookingSeat?->vehicleSeat?->seat_number ?? '-';
+        $depTime = $ticket->schedule?->departure_time ? $ticket->schedule->departure_time->format('d M Y H:i') : '-';
 
         // Check if ticket is already checked in
         if ($ticket->is_checked_in) {
             return response()->json([
                 'valid' => true,
                 'already_checked_in' => true,
-                'message' => 'Penumpang ini sudah melakukan Check-In sebelumnya pada '.$ticket->checked_in_at->format('H:i:s'),
+                'message' => 'Penumpang ini sudah melakukan Check-In sebelumnya pada '.($ticket->checked_in_at ? $ticket->checked_in_at->format('H:i:s') : '-'),
                 'ticket' => [
                     'id' => $ticket->id,
                     'ticket_code' => $ticket->ticket_code,
-                    'passenger_name' => $ticket->passenger->name,
-                    'passenger_phone' => $ticket->passenger->phone,
-                    'seat_number' => $ticket->bookingSeat->vehicleSeat->seat_number,
-                    'route' => $ticket->schedule->route->origin.' → '.$ticket->schedule->route->destination,
-                    'checked_in_at' => $ticket->checked_in_at->format('d M Y H:i:s'),
+                    'passenger_name' => $ticket->passenger?->name ?? 'Penumpang',
+                    'passenger_phone' => $ticket->passenger?->phone ?? '-',
+                    'seat_number' => $seatNum,
+                    'route' => "{$origin} → {$destination}",
+                    'checked_in_at' => $ticket->checked_in_at ? $ticket->checked_in_at->format('d M Y H:i:s') : '-',
                 ],
             ]);
         }
@@ -77,11 +82,11 @@ class ScanController extends Controller
             'ticket' => [
                 'id' => $ticket->id,
                 'ticket_code' => $ticket->ticket_code,
-                'passenger_name' => $ticket->passenger->name,
-                'passenger_phone' => $ticket->passenger->phone,
-                'seat_number' => $ticket->bookingSeat->vehicleSeat->seat_number,
-                'route' => $ticket->schedule->route->origin.' → '.$ticket->schedule->route->destination,
-                'departure_time' => $ticket->schedule->departure_time->format('d M Y H:i'),
+                'passenger_name' => $ticket->passenger?->name ?? 'Penumpang',
+                'passenger_phone' => $ticket->passenger?->phone ?? '-',
+                'seat_number' => $seatNum,
+                'route' => "{$origin} → {$destination}",
+                'departure_time' => $depTime,
             ],
         ]);
     }
@@ -90,12 +95,20 @@ class ScanController extends Controller
     {
         $driver = Auth::user()->driver;
 
-        if ($ticket->schedule->driver_id !== $driver->id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized driver.'], 403);
+        if ($ticket->schedule?->driver_id !== $driver->id) {
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Unauthorized driver.'], 403);
+            }
+
+            return back()->with('error', 'Anda tidak ditugaskan untuk memvalidasi tiket ini.');
         }
 
         if ($ticket->is_checked_in) {
-            return response()->json(['success' => false, 'message' => 'Penumpang sudah check-in.'], 400);
+            if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'Penumpang sudah check-in.'], 400);
+            }
+
+            return back()->with('error', 'Penumpang ini sudah check-in sebelumnya.');
         }
 
         $ticket->update([
@@ -104,16 +117,23 @@ class ScanController extends Controller
         ]);
 
         // Send notification to customer
-        Notification::create([
-            'user_id' => $ticket->booking->user_id,
-            'title' => 'Check-In Berhasil!',
-            'message' => "Tiket {$ticket->ticket_code} (Kursi {$ticket->bookingSeat->vehicleSeat->seat_number}) telah divalidasi oleh Driver.",
-            'type' => 'TRIP',
-        ]);
+        if ($ticket->booking) {
+            $seatNum = $ticket->bookingSeat?->vehicleSeat?->seat_number ?? '-';
+            Notification::create([
+                'user_id' => $ticket->booking->user_id,
+                'title' => 'Check-In Berhasil!',
+                'message' => "Tiket {$ticket->ticket_code} (Kursi {$seatNum}) telah divalidasi oleh Driver.",
+                'type' => 'TRIP',
+            ]);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Check-In penumpang berhasil divalidasi!',
-        ]);
+        if ($request->expectsJson() || $request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Check-In penumpang berhasil divalidasi!',
+            ]);
+        }
+
+        return back()->with('success', 'Check-In penumpang berhasil divalidasi!');
     }
 }

@@ -10,7 +10,7 @@ class TicketController extends Controller
 {
     public function show(Ticket $ticket)
     {
-        if ($ticket->booking->user_id !== Auth::id() && ! Auth::user()->isDriver() && ! Auth::user()->isAdmin()) {
+        if (! $ticket->booking || ($ticket->booking->user_id !== Auth::id() && ! Auth::user()->isDriver() && ! Auth::user()->isAdmin())) {
             abort(403, 'Anda tidak memiliki akses ke tiket ini.');
         }
 

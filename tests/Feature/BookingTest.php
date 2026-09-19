@@ -118,4 +118,104 @@ class BookingTest extends TestCase
             'is_checked_in' => false,
         ]);
     }
+
+    public function test_customer_can_cancel_booking(): void
+    {
+        $this->actingAs($this->customer);
+
+        $this->post('/booking/store', [
+            'outbound_schedule_id' => $this->schedule->id,
+            'trip_type' => 'ONE_WAY',
+            'outbound_seats' => [$this->seat1->id],
+            'payment_method' => 'BANK_TRANSFER',
+            'passengers' => [
+                ['name' => 'Penampung 1', 'phone' => '0811223344'],
+            ],
+        ]);
+
+        $booking = Booking::first();
+
+        $response = $this->post("/orders/{$booking->id}/cancel");
+        $response->assertRedirect(route('customer.orders.index'));
+
+        $booking->refresh();
+        $this->assertEquals('CANCELLED', $booking->status);
+    }
+
+    public function test_customer_can_view_ticket_detail(): void
+    {
+        $this->actingAs($this->customer);
+
+        $this->post('/booking/store', [
+            'outbound_schedule_id' => $this->schedule->id,
+            'trip_type' => 'ONE_WAY',
+            'outbound_seats' => [$this->seat1->id],
+            'payment_method' => 'BANK_TRANSFER',
+            'passengers' => [
+                ['name' => 'Penampung 1', 'phone' => '0811223344'],
+            ],
+        ]);
+
+        $booking = Booking::first();
+        $this->post("/payment/{$booking->id}/pay");
+
+        $ticket = $booking->tickets()->first();
+        $this->assertNotNull($ticket);
+
+        $response = $this->get("/tickets/{$ticket->id}");
+        $response->assertStatus(200);
+        $response->assertSee($ticket->ticket_code);
+    }
+
+    public function test_round_trip_booking_preserves_round_trip_type(): void
+    {
+        $this->actingAs($this->customer);
+
+        // Create return schedule & seats
+        $returnRoute = Route::create([
+            'origin' => 'Jambi',
+            'destination' => 'Palembang',
+            'duration_minutes' => 360,
+            'base_price' => 200000.00,
+            'is_active' => true,
+        ]);
+
+        $returnSchedule = Schedule::create([
+            'route_id' => $returnRoute->id,
+            'vehicle_id' => $this->schedule->vehicle_id,
+            'departure_time' => Carbon::now()->addDays(5),
+            'arrival_time' => Carbon::now()->addDays(5)->addHours(6),
+            'price' => 200000.00,
+            'status' => 'WAITING',
+        ]);
+
+        // 1. Select seat step
+        $selectSeatResp = $this->get('/booking/select-seat?'.http_build_query([
+            'outbound_schedule_id' => $this->schedule->id,
+            'return_schedule_id' => $returnSchedule->id,
+            'trip_type' => 'ROUND_TRIP',
+            'passengers' => 1,
+        ]));
+
+        $selectSeatResp->assertStatus(200);
+        $selectSeatResp->assertSee('Pulang-Pergi');
+
+        // 2. Store round-trip booking
+        $storeResp = $this->post('/booking/store', [
+            'outbound_schedule_id' => $this->schedule->id,
+            'return_schedule_id' => $returnSchedule->id,
+            'trip_type' => 'ROUND_TRIP',
+            'outbound_seats' => [$this->seat1->id],
+            'return_seats' => [$this->seat1->id],
+            'payment_method' => 'BANK_TRANSFER',
+            'passengers' => [
+                ['name' => 'Penumpang Pulang Pergi', 'phone' => '08123456789'],
+            ],
+        ]);
+
+        $booking = Booking::latest()->first();
+        $this->assertNotNull($booking);
+        $this->assertEquals('ROUND_TRIP', $booking->trip_type);
+        $this->assertCount(2, $booking->bookingTrips);
+    }
 }

@@ -37,10 +37,16 @@ class WaitingList extends Model
 
     public static function notifyWaitingUsers(Schedule $schedule): void
     {
+        $schedule->loadMissing('route');
+
         $waitingEntries = static::where('schedule_id', $schedule->id)
             ->where('status', 'WAITING')
             ->orderBy('created_at', 'asc')
             ->get();
+
+        $origin = $schedule->route?->origin ?? 'Asal';
+        $destination = $schedule->route?->destination ?? 'Tujuan';
+        $timeStr = $schedule->departure_time ? $schedule->departure_time->format('d M Y - H:i') : '-';
 
         foreach ($waitingEntries as $wl) {
             $wl->update([
@@ -51,7 +57,7 @@ class WaitingList extends Model
             Notification::create([
                 'user_id' => $wl->user_id,
                 'title' => '⚡ Kursi Travel Tersedia Kembali!',
-                'message' => "Kabar gembira! Ada pembatalan tiket pada rute {$schedule->route->origin} → {$schedule->route->destination} ({$schedule->departure_time->format('d M Y - H:i')} WIB). Segera pesan sebelum kehabisan!",
+                'message' => "Kabar gembira! Ada pembatalan tiket pada rute {$origin} → {$destination} ({$timeStr} WIB). Segera pesan sebelum kehabisan!",
                 'type' => 'BOOKING',
             ]);
         }

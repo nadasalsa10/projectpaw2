@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\WaitingList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -60,26 +61,28 @@ class OrderController extends Controller
             return back()->with('error', 'Pesanan ini tidak dapat dibatalkan.');
         }
 
-        $booking->update(['status' => 'CANCELLED']);
-        $booking->payment()->update(['payment_status' => 'FAILED']);
+        DB::transaction(function () use ($booking) {
+            $booking->update(['status' => 'CANCELLED']);
+            $booking->payments()->update(['payment_status' => 'FAILED']);
 
-        BookingSeat::whereHas('bookingTrip', function ($q) use ($booking) {
-            $q->where('booking_id', $booking->id);
-        })->update(['status' => 'CANCELLED']);
+            BookingSeat::whereHas('bookingTrip', function ($q) use ($booking) {
+                $q->where('booking_id', $booking->id);
+            })->update(['status' => 'CANCELLED']);
 
-        Notification::create([
-            'user_id' => $booking->user_id,
-            'title' => 'Pesanan Dibatalkan',
-            'message' => "Pesanan {$booking->booking_code} telah berhasil dibatalkan.",
-            'type' => 'BOOKING',
-        ]);
+            Notification::create([
+                'user_id' => $booking->user_id,
+                'title' => 'Pesanan Dibatalkan',
+                'message' => "Pesanan {$booking->booking_code} telah berhasil dibatalkan.",
+                'type' => 'BOOKING',
+            ]);
 
-        // Notify waiting list users for each trip in this booking
-        foreach ($booking->bookingTrips as $bt) {
-            if ($bt->schedule) {
-                WaitingList::notifyWaitingUsers($bt->schedule);
+            // Notify waiting list users for each trip in this booking
+            foreach ($booking->bookingTrips as $bt) {
+                if ($bt->schedule) {
+                    WaitingList::notifyWaitingUsers($bt->schedule);
+                }
             }
-        }
+        });
 
         return redirect()->route('customer.orders.index')->with('success', 'Pesanan berhasil dibatalkan.');
     }

@@ -61,11 +61,11 @@
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="w-6 h-6 rounded-lg bg-emerald-900 text-emerald-300 font-extrabold text-xs flex items-center justify-center border border-emerald-700">
-                                {{ $tkt->bookingSeat->vehicleSeat->seat_number }}
+                                {{ $tkt->bookingSeat?->vehicleSeat?->seat_number ?? '-' }}
                             </span>
-                            <span class="font-bold text-white text-sm">{{ $tkt->passenger->name }}</span>
+                            <span class="font-bold text-white text-sm">{{ $tkt->passenger?->name ?? 'Penumpang' }}</span>
                         </div>
-                        <span class="text-[10px] text-gray-400 block mt-0.5 ml-8">Booking: {{ $tkt->booking->booking_code }} | Tel: {{ $tkt->passenger->phone ?? '-' }}</span>
+                        <span class="text-[10px] text-gray-400 block mt-0.5 ml-8">Booking: {{ $tkt->booking?->booking_code ?? '-' }} | Tel: {{ $tkt->passenger?->phone ?? '-' }}</span>
                     </div>
 
                     <div>
@@ -74,7 +74,7 @@
                                 Checked-In
                             </span>
                         @else
-                            <form action="{{ route('driver.checkin', $tkt->id) }}" method="POST" onsubmit="return confirm('Validasi check-in untuk {{ $tkt->passenger->name }}?')">
+                            <form action="{{ route('driver.checkin', $tkt->id) }}" method="POST" onsubmit="return confirm('Validasi check-in untuk {{ $tkt->passenger?->name ?? 'Penumpang' }}?')">
                                 @csrf
                                 <button type="submit" class="text-[10px] bg-amber-600 hover:bg-amber-500 text-white font-bold px-2.5 py-1 rounded-full shadow">
                                     [ CHECK-IN ]

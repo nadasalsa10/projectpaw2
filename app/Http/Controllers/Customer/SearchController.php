@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingSeat;
+use App\Models\Driver;
 use App\Models\Route;
 use App\Models\Schedule;
+use App\Models\Vehicle;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -27,6 +29,11 @@ class SearchController extends Controller
         $tripType = $validated['trip_type'];
         $departureDate = Carbon::parse($validated['departure_date']);
         $passengersCount = (int) $validated['passengers'];
+
+        $outboundRoute = Route::where('origin', $origin)->where('destination', $destination)->first();
+        if ($outboundRoute) {
+            $this->ensureSchedulesExist($outboundRoute, $departureDate);
+        }
 
         // Search Outbound Schedules
         $outboundSchedules = Schedule::whereHas('route', function ($q) use ($origin, $destination) {
@@ -55,6 +62,11 @@ class SearchController extends Controller
         if ($tripType === 'ROUND_TRIP' && ! empty($validated['return_date'])) {
             $returnDate = Carbon::parse($validated['return_date']);
 
+            $returnRoute = Route::where('origin', $destination)->where('destination', $origin)->first();
+            if ($returnRoute) {
+                $this->ensureSchedulesExist($returnRoute, $returnDate);
+            }
+
             // Return trip route must be reverse (Destination -> Origin)
             $returnSchedules = Schedule::whereHas('route', function ($q) use ($destination, $origin) {
                 $q->where('origin', $destination)->where('destination', $origin);
@@ -82,5 +94,50 @@ class SearchController extends Controller
             'outboundSchedules' => $outboundSchedules,
             'returnSchedules' => $returnSchedules,
         ]);
+    }
+
+    private function ensureSchedulesExist(Route $route, Carbon $date): void
+    {
+        $existingCount = Schedule::where('route_id', $route->id)
+            ->whereDate('departure_time', $date->toDateString())
+            ->count();
+
+        if ($existingCount > 0) {
+            return;
+        }
+
+        $drivers = Driver::where('status', 'ACTIVE')->get();
+        $vehicles = Vehicle::where('status', 'ACTIVE')->get();
+
+        if ($drivers->isEmpty() || $vehicles->isEmpty()) {
+            return;
+        }
+
+        $timeSlots = [
+            ['hour' => 9, 'minute' => 30],
+            ['hour' => 14, 'minute' => 0],
+            ['hour' => 20, 'minute' => 0],
+        ];
+
+        foreach ($timeSlots as $idx => $slot) {
+            $depTime = $date->copy()->setHour($slot['hour'])->setMinute($slot['minute']);
+            if ($depTime->isPast()) {
+                continue;
+            }
+
+            $arrTime = $depTime->copy()->addMinutes($route->duration_minutes);
+            $driverObj = $drivers[$idx % $drivers->count()];
+            $vehicleObj = $vehicles[$idx % $vehicles->count()];
+
+            Schedule::create([
+                'route_id' => $route->id,
+                'vehicle_id' => $vehicleObj->id,
+                'driver_id' => $driverObj->id,
+                'departure_time' => $depTime,
+                'arrival_time' => $arrTime,
+                'price' => $route->base_price,
+                'status' => 'WAITING',
+            ]);
+        }
     }
 }

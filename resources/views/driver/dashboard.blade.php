@@ -34,17 +34,17 @@
                         <div>
                             <div class="flex items-center space-x-2">
                                 <span class="bg-emerald-600 text-white font-black px-2 py-0.5 rounded text-[10px]">
-                                    Kursi {{ $tkt->bookingSeat->vehicleSeat->seat_number }}
+                                    Kursi {{ $tkt->bookingSeat?->vehicleSeat?->seat_number ?? '-' }}
                                 </span>
-                                <span class="font-bold text-white">{{ $tkt->passenger->name }}</span>
+                                <span class="font-bold text-white">{{ $tkt->passenger?->name ?? 'Penumpang' }}</span>
                             </div>
                             <span class="text-[10px] text-blue-200 block mt-1">
-                                {{ $tkt->schedule->route->origin }} → {{ $tkt->schedule->route->destination }} | {{ $tkt->schedule->departure_time->format('d M H:i') }} WIB
+                                {{ $tkt->schedule?->route?->origin ?? '-' }} → {{ $tkt->schedule?->route?->destination ?? '-' }} | {{ $tkt->schedule?->departure_time ? $tkt->schedule->departure_time->format('d M H:i') : '-' }} WIB
                             </span>
                         </div>
 
                         <div class="text-right">
-                            <span class="text-[10px] text-gray-400 font-mono block">{{ $tkt->booking->booking_code }}</span>
+                            <span class="text-[10px] text-gray-400 font-mono block">{{ $tkt->booking?->booking_code ?? '-' }}</span>
                             @if($tkt->is_checked_in)
                                 <span class="text-[10px] text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Checked-In</span>
                             @else
@@ -130,8 +130,8 @@
                             <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider block">Daftar Penumpang Mobil Ini:</span>
                             @foreach($sch->tickets as $tkt)
                                 <div class="flex justify-between items-center text-xs py-1 border-b border-gray-800 last:border-0">
-                                    <span class="text-gray-200 font-medium"><strong class="text-emerald-400">[{{ $tkt->bookingSeat->vehicleSeat->seat_number }}]</strong> {{ $tkt->passenger->name }}</span>
-                                    <span class="text-[10px] text-gray-400 font-mono">{{ $tkt->passenger->phone ?? 'No HP' }}</span>
+                                    <span class="text-gray-200 font-medium"><strong class="text-emerald-400">[{{ $tkt->bookingSeat?->vehicleSeat?->seat_number ?? '-' }}]</strong> {{ $tkt->passenger?->name ?? 'Penumpang' }}</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">{{ $tkt->passenger?->phone ?? 'No HP' }}</span>
                                 </div>
                             @endforeach
                         </div>
