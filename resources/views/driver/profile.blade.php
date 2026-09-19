@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="space-y-4">
+    <div class="flex items-center justify-between">
+        <a href="{{ route('driver.dashboard') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Dashboard
+        </a>
+    </div>
+
     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 text-center shadow">
         <div class="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-2xl mx-auto mb-3 shadow">
             {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}

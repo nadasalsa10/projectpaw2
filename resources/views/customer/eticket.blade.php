@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="max-w-xl mx-auto px-4 py-8">
+    <div class="mb-4">
+        <a href="{{ $ticket->booking_id ? route('customer.orders.show', $ticket->booking_id) : route('customer.orders.index') }}" class="inline-flex items-center text-xs font-bold text-gray-700 hover:text-gray-900 bg-white border border-gray-300 hover:bg-gray-50 px-3.5 py-2 rounded-xl transition shadow-xs">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Detail Pesanan
+        </a>
+    </div>
+
     <div class="bg-white rounded-3xl border-2 border-blue-900 shadow-2xl overflow-hidden relative">
         <!-- Header Banner -->
         <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 relative">

@@ -68,7 +68,14 @@
         console.log('Kamera tidak aktif atau tidak diizinkan, gunakan input manual.');
     });
 ">
-    <!-- Title -->
+    <!-- Top Back Navigation & Title -->
+    <div class="flex items-center justify-between">
+        <a href="{{ route('driver.dashboard') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Dashboard
+        </a>
+        <span class="text-xs font-bold text-emerald-400">Scanner Tiket SIPP</span>
+    </div>
+
     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-4 text-center">
         <h1 class="text-base font-bold text-white">Scanner QR Tiket Penumpang</h1>
         <p class="text-xs text-gray-400 mt-0.5">Arahkan kamera ke QR Code Tiket Customer atau ketik Kode Tiket</p>

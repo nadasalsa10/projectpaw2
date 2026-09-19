@@ -4,9 +4,14 @@
 
 @section('content')
 <div class="bg-blue-900 text-white py-6 px-4">
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-xl font-bold">Notifikasi Saya</h1>
-        <p class="text-xs text-blue-200">Pemberitahuan terkini seputar booking dan status perjalanan Anda.</p>
+    <div class="max-w-2xl mx-auto flex justify-between items-center">
+        <div>
+            <h1 class="text-xl font-bold">Notifikasi Saya</h1>
+            <p class="text-xs text-blue-200">Pemberitahuan terkini seputar booking dan status perjalanan Anda.</p>
+        </div>
+        <a href="{{ route('customer.home') }}" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-blue-700 flex items-center">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Beranda
+        </a>
     </div>
 </div>
 

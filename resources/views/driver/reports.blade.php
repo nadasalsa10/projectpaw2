@@ -6,9 +6,14 @@
 <div class="space-y-4">
     <!-- Page Header -->
     <div class="flex justify-between items-center">
-        <div>
-            <h1 class="text-lg font-bold text-white">Laporan Pemesanan</h1>
-            <p class="text-xs text-gray-400">Riwayat tiket & penumpang pada armada Anda</p>
+        <div class="flex items-center space-x-3">
+            <a href="{{ route('driver.dashboard') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Dashboard
+            </a>
+            <div>
+                <h1 class="text-lg font-bold text-white">Laporan Pemesanan</h1>
+                <p class="text-xs text-gray-400">Riwayat tiket & penumpang pada armada Anda</p>
+            </div>
         </div>
         <a href="{{ route('driver.scan') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center shadow transition">
             <i class="fa-solid fa-qrcode mr-1.5"></i> Scan QR
@@ -16,7 +21,7 @@
     </div>
 
     <!-- Summary Metric Cards -->
-    <div class="grid grid-cols-2 gap-2.5">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-gray-800 border border-gray-700 p-3 rounded-xl flex items-center space-x-3">
             <div class="w-10 h-10 rounded-lg bg-blue-900/60 border border-blue-500/30 text-blue-400 flex items-center justify-center shrink-0">
                 <i class="fa-solid fa-ticket text-lg"></i>

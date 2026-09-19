@@ -5,9 +5,14 @@
 @section('content')
 <div class="bg-blue-900 text-white py-6 px-4">
     <div class="max-w-3xl mx-auto flex justify-between items-center">
-        <div>
-            <h1 class="text-lg font-bold">Detail Booking {{ $booking->booking_code }}</h1>
-            <p class="text-xs text-blue-200">Dibuat pada: {{ $booking->created_at->format('d M Y H:i') }}</p>
+        <div class="flex items-center space-x-3">
+            <a href="{{ route('customer.orders.index') }}" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-blue-700 flex items-center">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+            </a>
+            <div>
+                <h1 class="text-lg font-bold">Detail Booking {{ $booking->booking_code }}</h1>
+                <p class="text-xs text-blue-200">Dibuat pada: {{ $booking->created_at->format('d M Y H:i') }}</p>
+            </div>
         </div>
         <span class="text-xs bg-blue-700 text-white font-bold px-3 py-1.5 rounded-full border border-blue-600">
             {{ $booking->status }}

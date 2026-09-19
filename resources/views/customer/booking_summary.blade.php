@@ -4,9 +4,14 @@
 
 @section('content')
 <div class="bg-gray-100 border-b border-gray-200 py-4 px-4">
-    <div class="max-w-3xl mx-auto">
-        <h1 class="text-lg font-bold text-gray-900">Ringkasan & Metode Pembayaran</h1>
-        <p class="text-xs text-gray-500">Periksa rincian pesanan Anda sebelum melanjutkan ke pembayaran.</p>
+    <div class="max-w-3xl mx-auto flex items-center space-x-3">
+        <button type="button" onclick="window.history.back()" class="inline-flex items-center text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-300 px-3 py-1.5 rounded-xl transition shadow-xs">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+        </button>
+        <div>
+            <h1 class="text-lg font-bold text-gray-900">Ringkasan & Metode Pembayaran</h1>
+            <p class="text-xs text-gray-500">Periksa rincian pesanan Anda sebelum melanjutkan ke pembayaran.</p>
+        </div>
     </div>
 </div>
 

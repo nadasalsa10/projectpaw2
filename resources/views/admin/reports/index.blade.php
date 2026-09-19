@@ -27,7 +27,7 @@
     </div>
 
     <!-- Recent Paid Transactions Table -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
         <div class="p-5 border-b border-gray-100">
             <h3 class="font-bold text-gray-900 text-sm">Rincian Transaksi Masuk Terakhir</h3>
         </div>

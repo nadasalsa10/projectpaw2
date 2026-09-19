@@ -4,6 +4,16 @@
 
 @section('content')
 <div class="space-y-4">
+    <!-- Top Back Navigation -->
+    <div class="flex items-center justify-between">
+        <a href="{{ route('driver.schedules') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Jadwal
+        </a>
+        <a href="{{ route('driver.dashboard') }}" class="inline-flex items-center text-xs font-bold text-emerald-400 hover:text-emerald-300">
+            <i class="fa-solid fa-gauge mr-1"></i> Dashboard
+        </a>
+    </div>
+
     <!-- Header Trip Card -->
     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow">
         <div class="flex justify-between items-start border-b border-gray-700 pb-3 mb-3">
@@ -26,7 +36,7 @@
         <!-- Trip Status Advance Controls -->
         <div class="mt-4 pt-3 border-t border-gray-700">
             <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider block mb-2">Kontrol Status Perjalanan</span>
-            <form action="{{ route('driver.trip.status', $schedule->id) }}" method="POST" class="grid grid-cols-2 gap-2">
+            <form action="{{ route('driver.trip.status', $schedule->id) }}" method="POST" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 @csrf
                 <button type="submit" name="status" value="BOARDING" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-2 rounded-xl transition shadow">
                     [ BOARDING ]

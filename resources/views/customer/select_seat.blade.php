@@ -4,10 +4,15 @@
 
 @section('content')
 <div class="bg-gray-100 border-b border-gray-200 py-4 px-4">
-    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-        <div>
-            <h1 class="text-lg font-bold text-gray-900">Pilih Kursi Penumpang</h1>
-            <p class="text-xs text-gray-500">Pilih tepat {{ $validated['passengers'] }} kursi @if($returnSchedule) untuk keberangkatan & kepulangan @endif.</p>
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+            <button type="button" onclick="window.history.back()" class="inline-flex items-center text-xs font-semibold text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-300 px-3 py-1.5 rounded-xl transition shadow-xs">
+                <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+            </button>
+            <div>
+                <h1 class="text-lg font-bold text-gray-900">Pilih Kursi Penumpang</h1>
+                <p class="text-xs text-gray-500">Pilih tepat {{ $validated['passengers'] }} kursi @if($returnSchedule) untuk keberangkatan & kepulangan @endif.</p>
+            </div>
         </div>
         <span class="text-xs font-bold bg-blue-100 text-blue-800 px-3 py-1 rounded-full border border-blue-200">
             {{ $validated['passengers'] }} Penumpang | {{ $validated['trip_type'] === 'ROUND_TRIP' ? 'Pulang-Pergi' : 'Sekali Jalan' }}

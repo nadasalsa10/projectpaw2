@@ -4,7 +4,12 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-base font-bold text-white mb-2">Semua Penugasan Perjalanan</h1>
+    <div class="flex justify-between items-center">
+        <h1 class="text-base font-bold text-white">Semua Penugasan Perjalanan</h1>
+        <a href="{{ route('driver.dashboard') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Dashboard
+        </a>
+    </div>
 
     <div class="space-y-3">
         @forelse($schedules as $sch)

@@ -134,23 +134,25 @@
     </footer>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-6 flex justify-around items-center md:hidden z-40 shadow-lg">
-        <a href="{{ route('customer.home') }}" class="flex flex-col items-center {{ request()->routeIs('customer.home') ? 'text-blue-600 font-bold' : 'text-gray-500' }}">
-            <i class="fa-solid fa-house text-lg"></i>
-            <span class="text-[10px] mt-1">Beranda</span>
-        </a>
-        <a href="{{ route('customer.orders.index') }}" class="flex flex-col items-center {{ request()->routeIs('customer.orders.*') ? 'text-blue-600 font-bold' : 'text-gray-500' }}">
-            <i class="fa-solid fa-ticket text-lg"></i>
-            <span class="text-[10px] mt-1">Pesanan</span>
-        </a>
-        <a href="{{ route('customer.notifications.index') }}" class="flex flex-col items-center {{ request()->routeIs('customer.notifications.*') ? 'text-blue-600 font-bold' : 'text-gray-500' }}">
-            <i class="fa-solid fa-bell text-lg"></i>
-            <span class="text-[10px] mt-1">Notifikasi</span>
-        </a>
-        <a href="{{ route('customer.profile') }}" class="flex flex-col items-center {{ request()->routeIs('customer.profile') ? 'text-blue-600 font-bold' : 'text-gray-500' }}">
-            <i class="fa-solid fa-user text-lg"></i>
-            <span class="text-[10px] mt-1">Profil</span>
-        </a>
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-2 px-4 md:hidden z-40 shadow-lg">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            <a href="{{ route('customer.home') }}" class="flex flex-col items-center {{ request()->routeIs('customer.home') ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600' }}">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] mt-1">Beranda</span>
+            </a>
+            <a href="{{ route('customer.orders.index') }}" class="flex flex-col items-center {{ request()->routeIs('customer.orders.*') ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600' }}">
+                <i class="fa-solid fa-ticket text-lg"></i>
+                <span class="text-[10px] mt-1">Pesanan</span>
+            </a>
+            <a href="{{ route('customer.notifications.index') }}" class="flex flex-col items-center {{ request()->routeIs('customer.notifications.*') ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600' }}">
+                <i class="fa-solid fa-bell text-lg"></i>
+                <span class="text-[10px] mt-1">Notifikasi</span>
+            </a>
+            <a href="{{ route('customer.profile') }}" class="flex flex-col items-center {{ request()->routeIs('customer.profile') ? 'text-blue-600 font-bold' : 'text-gray-500 hover:text-blue-600' }}">
+                <i class="fa-solid fa-user text-lg"></i>
+                <span class="text-[10px] mt-1">Profil</span>
+            </a>
+        </div>
     </div>
 
     @stack('scripts')

@@ -24,19 +24,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans flex h-screen overflow-hidden">
+<body class="bg-gray-100 text-gray-800 font-sans flex h-screen overflow-hidden" x-data="{ sidebarOpen: false }">
+
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div x-show="sidebarOpen" 
+         @click="sidebarOpen = false" 
+         x-transition:enter="transition-opacity ease-linear duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-linear duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 md:hidden"
+         style="display: none;"></div>
 
     <!-- Sidebar Admin -->
-    <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800 transform md:translate-x-0 md:static transition-transform duration-200 ease-in-out">
         <!-- Logo -->
-        <div class="p-4 border-b border-slate-800 flex items-center space-x-3">
-            <div class="bg-blue-600 text-white p-2 rounded-lg text-lg font-bold">
-                <i class="fa-solid fa-user-shield"></i>
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg text-lg font-bold">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-white text-lg tracking-wider">SIPP ADMIN</span>
+                    <span class="text-[10px] block text-slate-400">Portal Manajemen Central</span>
+                </div>
             </div>
-            <div>
-                <span class="font-extrabold text-white text-lg tracking-wider">SIPP ADMIN</span>
-                <span class="text-[10px] block text-slate-400">Portal Manajemen Central</span>
-            </div>
+            <!-- Mobile Close Sidebar Button -->
+            <button @click="sidebarOpen = false" class="text-slate-400 hover:text-white p-1 md:hidden">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
         </div>
 
         <!-- Sidebar Navigation -->
@@ -99,8 +118,13 @@
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
         <!-- Top Navigation -->
-        <header class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center flex-shrink-0 shadow-sm">
-            <h1 class="text-lg font-bold text-gray-800">@yield('page_title', 'Dashboard')</h1>
+        <header class="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex justify-between items-center flex-shrink-0 shadow-sm">
+            <div class="flex items-center space-x-3">
+                <button @click="sidebarOpen = !sidebarOpen" class="text-gray-600 hover:text-gray-900 focus:outline-none md:hidden p-1">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                <h1 class="text-base md:text-lg font-bold text-gray-800">@yield('page_title', 'Dashboard')</h1>
+            </div>
             <div class="flex items-center space-x-4">
                 <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium">
                     <i class="fa-regular fa-clock mr-1"></i> {{ date('d M Y') }}
@@ -109,7 +133,7 @@
         </header>
 
         <!-- Page Body -->
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="flex-1 overflow-y-auto p-4 md:p-6">
             @if(session('success'))
                 <div class="mb-4 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-lg flex items-center shadow-sm">
                     <i class="fa-solid fa-circle-check text-emerald-500 mr-3 text-lg"></i>

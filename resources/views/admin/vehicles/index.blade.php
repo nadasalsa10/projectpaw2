@@ -14,7 +14,7 @@
     </div>
 
     <!-- Vehicles Table -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-x-auto">
         <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-gray-50 text-gray-500 uppercase font-bold text-[10px] tracking-wider border-b border-gray-100">
                 <tr>

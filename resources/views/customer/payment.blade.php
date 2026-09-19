@@ -4,6 +4,12 @@
 
 @section('content')
 <div class="max-w-2xl mx-auto px-4 py-8">
+    <div class="mb-4">
+        <a href="{{ route('customer.orders.show', $booking->id) }}" class="inline-flex items-center text-xs font-bold text-gray-700 hover:text-gray-900 bg-white border border-gray-200 hover:bg-gray-50 px-3.5 py-2 rounded-xl transition shadow-xs">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Detail Pesanan
+        </a>
+    </div>
+
     @if($booking->status === 'EXPIRED')
         <div class="bg-rose-50 border border-rose-200 text-rose-800 p-6 rounded-2xl text-center">
             <i class="fa-solid fa-clock-rotate-left text-4xl text-rose-500 mb-3 block"></i>
