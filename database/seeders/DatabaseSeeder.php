@@ -164,43 +164,56 @@ class DatabaseSeeder extends Seeder
         // 6. Generate Multiple Varied Schedules per Day (Pagi, Siang, Sore, Malam)
         $today = Carbon::today();
 
-        // Time slots: Pagi 07:00, Pagi 09:30, Siang 13:00, Sore 16:30, Malam 20:00, Malam 21:30
-        $timeSlots = [
-            ['hour' => 7, 'minute' => 0],
-            ['hour' => 9, 'minute' => 30],
-            ['hour' => 13, 'minute' => 0],
-            ['hour' => 16, 'minute' => 30],
-            ['hour' => 20, 'minute' => 0],
-            ['hour' => 21, 'minute' => 30],
+        // Varied time templates (Pagi, Siang, Sore, Malam)
+        $baseSlots = [
+            ['hour' => 6, 'minute' => 30],
+            ['hour' => 9, 'minute' => 0],
+            ['hour' => 13, 'minute' => 30],
+            ['hour' => 16, 'minute' => 15],
+            ['hour' => 19, 'minute' => 30],
+            ['hour' => 21, 'minute' => 45],
         ];
 
         foreach ($createdRoutes as $routeIndex => $route) {
-            // Assign 3 different departure time slots per route per day for maximum choice
-            $routeSlots = [
-                $timeSlots[$routeIndex % count($timeSlots)],
-                $timeSlots[($routeIndex + 2) % count($timeSlots)],
-                $timeSlots[($routeIndex + 4) % count($timeSlots)],
+            // Select 4 varied departure slots per route
+            $selectedSlotIndexes = [
+                ($routeIndex) % count($baseSlots),
+                ($routeIndex + 2) % count($baseSlots),
+                ($routeIndex + 3) % count($baseSlots),
+                ($routeIndex + 5) % count($baseSlots),
             ];
 
             foreach (range(0, 14) as $dayOffset) {
                 $scheduleDate = $today->copy()->addDays($dayOffset);
 
-                foreach ($routeSlots as $slotIdx => $slot) {
-                    $driverObj = $createdDrivers[($routeIndex + $slotIdx) % count($createdDrivers)];
-                    $vehicleObj = $createdVehicles[($routeIndex + $slotIdx) % count($createdVehicles)];
+                foreach ($selectedSlotIndexes as $slotIdx => $slotKey) {
+                    $slot = $baseSlots[$slotKey];
 
-                    $depTime = $scheduleDate->copy()->setHour($slot['hour'])->setMinute($slot['minute']);
+                    // Slight minute variation per route for natural realism
+                    $minuteOffset = ($routeIndex * 10) % 30;
+                    $minute = ($slot['minute'] + $minuteOffset) % 60;
+                    $hour = $slot['hour'] + (int) floor(($slot['minute'] + $minuteOffset) / 60);
+
+                    // Rotate driver and vehicle across days and slots
+                    $driverObj = $createdDrivers[($routeIndex + $slotIdx + $dayOffset) % count($createdDrivers)];
+                    $vehicleObj = $createdVehicles[($routeIndex + $slotIdx + $dayOffset) % count($createdVehicles)];
+
+                    $depTime = $scheduleDate->copy()->setHour($hour)->setMinute($minute)->setSecond(0);
                     $arrTime = $depTime->copy()->addMinutes($route->duration_minutes);
 
-                    Schedule::create([
-                        'route_id' => $route->id,
-                        'vehicle_id' => $vehicleObj->id,
-                        'driver_id' => $driverObj->id,
-                        'departure_time' => $depTime,
-                        'arrival_time' => $arrTime,
-                        'price' => $route->base_price,
-                        'status' => 'WAITING',
-                    ]);
+                    Schedule::firstOrCreate(
+                        [
+                            'route_id' => $route->id,
+                            'departure_time' => $depTime,
+                        ],
+                        [
+                            'vehicle_id' => $vehicleObj->id,
+                            'driver_id' => $driverObj->id,
+                            'arrival_time' => $arrTime,
+                            'price' => $route->base_price,
+                            'status' => 'WAITING',
+                        ]
+                    );
                 }
             }
         }

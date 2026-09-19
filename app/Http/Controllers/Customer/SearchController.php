@@ -98,14 +98,6 @@ class SearchController extends Controller
 
     private function ensureSchedulesExist(Route $route, Carbon $date): void
     {
-        $existingCount = Schedule::where('route_id', $route->id)
-            ->whereDate('departure_time', $date->toDateString())
-            ->count();
-
-        if ($existingCount > 0) {
-            return;
-        }
-
         $drivers = Driver::where('status', 'ACTIVE')->get();
         $vehicles = Vehicle::where('status', 'ACTIVE')->get();
 
@@ -113,31 +105,49 @@ class SearchController extends Controller
             return;
         }
 
-        $timeSlots = [
-            ['hour' => 9, 'minute' => 30],
-            ['hour' => 14, 'minute' => 0],
-            ['hour' => 20, 'minute' => 0],
+        // Varied departure time templates per route to prevent duplicate / uniform departure times
+        $timeTemplates = [
+            // Morning, Afternoon, Evening, Night schedules
+            ['hour' => 6, 'minute' => 30],
+            ['hour' => 9, 'minute' => 0],
+            ['hour' => 13, 'minute' => 30],
+            ['hour' => 16, 'minute' => 0],
+            ['hour' => 19, 'minute' => 30],
+            ['hour' => 21, 'minute' => 45],
         ];
 
-        foreach ($timeSlots as $idx => $slot) {
-            $depTime = $date->copy()->setHour($slot['hour'])->setMinute($slot['minute']);
+        // Shift slots based on route ID so each route has distinct departure times
+        $routeOffset = $route->id % 3;
+
+        foreach ($timeTemplates as $idx => $slot) {
+            // Apply slight variance per route
+            $minuteOffset = ($route->id * 5) % 30;
+            $minute = ($slot['minute'] + $minuteOffset) % 60;
+            $hour = $slot['hour'] + (int) floor(($slot['minute'] + $minuteOffset) / 60);
+
+            $depTime = $date->copy()->setHour($hour)->setMinute($minute)->setSecond(0);
             if ($depTime->isPast()) {
                 continue;
             }
 
             $arrTime = $depTime->copy()->addMinutes($route->duration_minutes);
-            $driverObj = $drivers[$idx % $drivers->count()];
-            $vehicleObj = $vehicles[$idx % $vehicles->count()];
+            $driverObj = $drivers[($idx + $routeOffset) % $drivers->count()];
+            $vehicleObj = $vehicles[($idx + $routeOffset) % $vehicles->count()];
 
-            Schedule::create([
-                'route_id' => $route->id,
-                'vehicle_id' => $vehicleObj->id,
-                'driver_id' => $driverObj->id,
-                'departure_time' => $depTime,
-                'arrival_time' => $arrTime,
-                'price' => $route->base_price,
-                'status' => 'WAITING',
-            ]);
+            // Use firstOrCreate to strictly prevent duplicate schedules
+            Schedule::firstOrCreate(
+                [
+                    'route_id' => $route->id,
+                    'departure_time' => $depTime,
+                ],
+                [
+                    'vehicle_id' => $vehicleObj->id,
+                    'driver_id' => $driverObj->id,
+                    'arrival_time' => $arrTime,
+                    'price' => $route->base_price,
+                    'status' => 'WAITING',
+                ]
+            );
         }
     }
 }
