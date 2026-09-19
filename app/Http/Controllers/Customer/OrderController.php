@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\BookingSeat;
 use App\Models\Notification;
+use App\Models\WaitingList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -72,6 +73,13 @@ class OrderController extends Controller
             'message' => "Pesanan {$booking->booking_code} telah berhasil dibatalkan.",
             'type' => 'BOOKING',
         ]);
+
+        // Notify waiting list users for each trip in this booking
+        foreach ($booking->bookingTrips as $bt) {
+            if ($bt->schedule) {
+                WaitingList::notifyWaitingUsers($bt->schedule);
+            }
+        }
 
         return redirect()->route('customer.orders.index')->with('success', 'Pesanan berhasil dibatalkan.');
     }

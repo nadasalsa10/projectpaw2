@@ -19,6 +19,7 @@ class Schedule extends Model
         'arrival_time',
         'price',
         'status',
+        'is_extra',
     ];
 
     protected function casts(): array
@@ -27,6 +28,7 @@ class Schedule extends Model
             'departure_time' => 'datetime',
             'arrival_time' => 'datetime',
             'price' => 'decimal:2',
+            'is_extra' => 'boolean',
         ];
     }
 
@@ -53,5 +55,29 @@ class Schedule extends Model
     public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function waitingLists(): HasMany
+    {
+        return $this->hasMany(WaitingList::class);
+    }
+
+    public function getAvailableSeatsCountAttribute(): int
+    {
+        $totalCapacity = $this->vehicle ? $this->vehicle->capacity : 12;
+
+        $bookedSeats = BookingSeat::whereHas('bookingTrip', function ($q) {
+            $q->where('schedule_id', $this->id)
+                ->whereHas('booking', function ($bq) {
+                    $bq->whereIn('status', ['PENDING_PAYMENT', 'PAYMENT_PROCESSING', 'PAID', 'CONFIRMED', 'WAITING_DEPARTURE', 'BOARDING', 'IN_TRANSIT']);
+                });
+        })->whereIn('status', ['LOCKED', 'BOOKED'])->count();
+
+        return max(0, $totalCapacity - $bookedSeats);
+    }
+
+    public function isFull(): bool
+    {
+        return $this->available_seats_count <= 0;
     }
 }

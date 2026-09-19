@@ -15,6 +15,9 @@ class ScheduleController extends Controller
     public function index()
     {
         $schedules = Schedule::with(['route', 'vehicle', 'driver.user'])
+            ->withCount(['waitingLists' => function ($q) {
+                $q->where('status', 'WAITING');
+            }])
             ->orderBy('departure_time', 'desc')
             ->get();
 
@@ -33,6 +36,7 @@ class ScheduleController extends Controller
             'driver_id' => ['required', 'exists:drivers,id'],
             'departure_time' => ['required', 'date', 'after:now'],
             'price' => ['required', 'numeric', 'min:0'],
+            'is_extra' => ['nullable', 'boolean'],
         ]);
 
         $route = Route::findOrFail($validated['route_id']);
@@ -47,6 +51,7 @@ class ScheduleController extends Controller
             'arrival_time' => $arrival,
             'price' => $validated['price'],
             'status' => 'WAITING',
+            'is_extra' => $request->boolean('is_extra'),
         ]);
 
         return back()->with('success', 'Jadwal perjalanan baru berhasil diterbitkan.');
@@ -61,6 +66,7 @@ class ScheduleController extends Controller
             'departure_time' => ['required', 'date'],
             'price' => ['required', 'numeric', 'min:0'],
             'status' => ['required', 'in:WAITING,BOARDING,IN_TRANSIT,ARRIVED,COMPLETED,CANCELLED'],
+            'is_extra' => ['nullable', 'boolean'],
         ]);
 
         $route = Route::findOrFail($validated['route_id']);
@@ -75,6 +81,7 @@ class ScheduleController extends Controller
             'arrival_time' => $arrival,
             'price' => $validated['price'],
             'status' => $validated['status'],
+            'is_extra' => $request->boolean('is_extra'),
         ]);
 
         return back()->with('success', 'Jadwal perjalanan berhasil diperbarui.');

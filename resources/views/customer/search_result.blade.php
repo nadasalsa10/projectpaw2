@@ -33,30 +33,60 @@
 
             <div class="space-y-4">
                 @forelse($outboundSchedules as $sch)
-                    <label class="block cursor-pointer">
-                        <div class="bg-white border-2 border-gray-200 hover:border-blue-500 rounded-2xl p-5 shadow-sm transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden group">
-                            <input type="radio" name="outbound_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
-                            <div class="peer-checked:border-blue-600 peer-checked:bg-blue-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
+                    @php $isFull = ($sch->available_seats ?? $sch->available_seats_count) <= 0; @endphp
+                    <div class="bg-white border-2 {{ $isFull ? 'border-gray-200 opacity-90' : 'border-gray-200 hover:border-blue-500' }} rounded-2xl p-5 shadow-sm transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden group">
+                        
+                        @if(!$isFull)
+                            <label class="absolute inset-0 z-10 cursor-pointer">
+                                <input type="radio" name="outbound_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
+                                <div class="peer-checked:border-blue-600 peer-checked:bg-blue-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
+                            </label>
+                        @endif
 
-                            <div class="relative z-10">
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-lg font-black text-blue-900">{{ $sch->departure_time->format('H:i') }} WIB</span>
-                                    <span class="text-xs text-gray-400 font-medium">→ Durasi {{ floor($sch->route->duration_minutes / 60) }}j {{ $sch->route->duration_minutes % 60 }}m</span>
-                                    <span class="text-lg font-black text-gray-700">{{ $sch->arrival_time->format('H:i') }} WIB</span>
-                                </div>
-                                <div class="text-xs text-gray-600 mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                                    <span><i class="fa-solid fa-van-shuttle text-blue-600 mr-1"></i> {{ $sch->vehicle->name }} ({{ $sch->vehicle->license_plate }})</span>
-                                    <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats }} Kursi</strong></span>
-                                    <span><i class="fa-solid fa-user text-gray-400 mr-1"></i> Driver: {{ $sch->driver?->user->name ?? 'TBA' }}</span>
-                                </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                <span class="text-lg font-black text-blue-900">{{ $sch->departure_time->format('H:i') }} WIB</span>
+                                <span class="text-xs text-gray-400 font-medium">→ Durasi {{ floor($sch->route->duration_minutes / 60) }}j {{ $sch->route->duration_minutes % 60 }}m</span>
+                                <span class="text-lg font-black text-gray-700 mr-2">{{ $sch->arrival_time->format('H:i') }} WIB</span>
+                                
+                                @if($sch->is_extra)
+                                    <span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded border border-amber-300">
+                                        <i class="fa-solid fa-star text-[9px] mr-0.5"></i> EXTRA MUDIK
+                                    </span>
+                                @endif
                             </div>
 
-                            <div class="text-left md:text-right relative z-10 w-full md:w-auto flex md:flex-col justify-between items-center border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
-                                <div class="font-black text-xl text-emerald-600">Rp {{ number_format($sch->price, 0, ',', '.') }}<span class="text-xs text-gray-400 font-normal"> /org</span></div>
-                                <span class="text-xs font-bold text-blue-600 group-hover:underline">Pilih Jadwal <i class="fa-solid fa-circle-check ml-1"></i></span>
+                            <div class="text-xs text-gray-600 mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                <span><i class="fa-solid fa-van-shuttle text-blue-600 mr-1"></i> {{ $sch->vehicle->name }} ({{ $sch->vehicle->license_plate }})</span>
+                                @if($isFull)
+                                    <span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[11px] border border-rose-200">
+                                        <i class="fa-solid fa-circle-xmark mr-1"></i> KURSI FULL (0 Tersisa)
+                                    </span>
+                                @else
+                                    <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats ?? $sch->available_seats_count }} Kursi</strong></span>
+                                @endif
+                                <span><i class="fa-solid fa-user text-gray-400 mr-1"></i> Driver: {{ $sch->driver?->user->name ?? 'TBA' }}</span>
                             </div>
                         </div>
-                    </label>
+
+                        <div class="text-left md:text-right relative z-20 w-full md:w-auto flex md:flex-col justify-between items-center border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+                            <div class="font-black text-xl text-emerald-600">Rp {{ number_format($sch->price, 0, ',', '.') }}<span class="text-xs text-gray-400 font-normal"> /org</span></div>
+                            
+                            @if($isFull)
+                                <form action="{{ route('customer.waiting_list.join') }}" method="POST" class="mt-1">
+                                    @csrf
+                                    <input type="hidden" name="schedule_id" value="{{ $sch->id }}">
+                                    <input type="hidden" name="passengers_count" value="{{ $searchParams['passengers'] }}">
+                                    <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow transition flex items-center space-x-1">
+                                        <i class="fa-solid fa-clipboard-list text-[11px]"></i>
+                                        <span>Gabung Waiting List</span>
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-xs font-bold text-blue-600 group-hover:underline">Pilih Jadwal <i class="fa-solid fa-circle-check ml-1"></i></span>
+                            @endif
+                        </div>
+                    </div>
                 @empty
                     <div class="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center text-gray-500 text-xs">
                         <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500 mb-2 block"></i>
@@ -76,29 +106,59 @@
 
                 <div class="space-y-4">
                     @forelse($returnSchedules as $sch)
-                        <label class="block cursor-pointer">
-                            <div class="bg-white border-2 border-gray-200 hover:border-indigo-500 rounded-2xl p-5 shadow-sm transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden group">
-                                <input type="radio" name="return_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
-                                <div class="peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
+                        @php $isFull = ($sch->available_seats ?? $sch->available_seats_count) <= 0; @endphp
+                        <div class="bg-white border-2 {{ $isFull ? 'border-gray-200 opacity-90' : 'border-gray-200 hover:border-indigo-500' }} rounded-2xl p-5 shadow-sm transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden group">
+                            
+                            @if(!$isFull)
+                                <label class="absolute inset-0 z-10 cursor-pointer">
+                                    <input type="radio" name="return_schedule_id" value="{{ $sch->id }}" required class="hidden peer">
+                                    <div class="peer-checked:border-indigo-600 peer-checked:bg-indigo-50/50 absolute inset-0 border-2 rounded-2xl pointer-events-none transition"></div>
+                                </label>
+                            @endif
 
-                                <div class="relative z-10">
-                                    <div class="flex items-center space-x-3">
-                                        <span class="text-lg font-black text-indigo-900">{{ $sch->departure_time->format('H:i') }} WIB</span>
-                                        <span class="text-xs text-gray-400 font-medium">→ Durasi {{ floor($sch->route->duration_minutes / 60) }}j {{ $sch->route->duration_minutes % 60 }}m</span>
-                                        <span class="text-lg font-black text-gray-700">{{ $sch->arrival_time->format('H:i') }} WIB</span>
-                                    </div>
-                                    <div class="text-xs text-gray-600 mt-2 flex flex-wrap gap-x-4 gap-y-1">
-                                        <span><i class="fa-solid fa-van-shuttle text-indigo-600 mr-1"></i> {{ $sch->vehicle->name }}</span>
-                                        <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats }} Kursi</strong></span>
-                                    </div>
+                            <div class="relative z-10">
+                                <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                    <span class="text-lg font-black text-indigo-900">{{ $sch->departure_time->format('H:i') }} WIB</span>
+                                    <span class="text-xs text-gray-400 font-medium">→ Durasi {{ floor($sch->route->duration_minutes / 60) }}j {{ $sch->route->duration_minutes % 60 }}m</span>
+                                    <span class="text-lg font-black text-gray-700 mr-2">{{ $sch->arrival_time->format('H:i') }} WIB</span>
+                                    
+                                    @if($sch->is_extra)
+                                        <span class="bg-amber-100 text-amber-800 text-[10px] font-extrabold px-2 py-0.5 rounded border border-amber-300">
+                                            <i class="fa-solid fa-star text-[9px] mr-0.5"></i> EXTRA MUDIK
+                                        </span>
+                                    @endif
                                 </div>
 
-                                <div class="text-left md:text-right relative z-10 w-full md:w-auto flex md:flex-col justify-between items-center border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
-                                    <div class="font-black text-xl text-emerald-600">Rp {{ number_format($sch->price, 0, ',', '.') }}<span class="text-xs text-gray-400 font-normal"> /org</span></div>
-                                    <span class="text-xs font-bold text-indigo-600 group-hover:underline">Pilih Jadwal <i class="fa-solid fa-circle-check ml-1"></i></span>
+                                <div class="text-xs text-gray-600 mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                                    <span><i class="fa-solid fa-van-shuttle text-indigo-600 mr-1"></i> {{ $sch->vehicle->name }}</span>
+                                    @if($isFull)
+                                        <span class="bg-rose-100 text-rose-700 font-bold px-2 py-0.5 rounded text-[11px] border border-rose-200">
+                                            <i class="fa-solid fa-circle-xmark mr-1"></i> KURSI FULL (0 Tersisa)
+                                        </span>
+                                    @else
+                                        <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats ?? $sch->available_seats_count }} Kursi</strong></span>
+                                    @endif
                                 </div>
                             </div>
-                        </label>
+
+                            <div class="text-left md:text-right relative z-20 w-full md:w-auto flex md:flex-col justify-between items-center border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+                                <div class="font-black text-xl text-emerald-600">Rp {{ number_format($sch->price, 0, ',', '.') }}<span class="text-xs text-gray-400 font-normal"> /org</span></div>
+                                
+                                @if($isFull)
+                                    <form action="{{ route('customer.waiting_list.join') }}" method="POST" class="mt-1">
+                                        @csrf
+                                        <input type="hidden" name="schedule_id" value="{{ $sch->id }}">
+                                        <input type="hidden" name="passengers_count" value="{{ $searchParams['passengers'] }}">
+                                        <button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow transition flex items-center space-x-1">
+                                            <i class="fa-solid fa-clipboard-list text-[11px]"></i>
+                                            <span>Gabung Waiting List</span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-xs font-bold text-indigo-600 group-hover:underline">Pilih Jadwal <i class="fa-solid fa-circle-check ml-1"></i></span>
+                                @endif
+                            </div>
+                        </div>
                     @empty
                         <div class="bg-gray-50 border border-gray-200 rounded-2xl p-8 text-center text-gray-500 text-xs">
                             <i class="fa-solid fa-triangle-exclamation text-2xl text-amber-500 mb-2 block"></i>

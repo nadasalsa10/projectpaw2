@@ -54,6 +54,10 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/notifications', [Customer\OrderController::class, 'notifications'])->name('customer.notifications.index');
     Route::get('/profile', [Customer\ProfileController::class, 'show'])->name('customer.profile');
     Route::post('/profile', [Customer\ProfileController::class, 'update'])->name('customer.profile.update');
+
+    Route::get('/waiting-list', [Customer\WaitingListController::class, 'index'])->name('customer.waiting_list.index');
+    Route::post('/waiting-list/join', [Customer\WaitingListController::class, 'join'])->name('customer.waiting_list.join');
+    Route::post('/waiting-list/{waitingList}/cancel', [Customer\WaitingListController::class, 'cancel'])->name('customer.waiting_list.cancel');
 });
 
 /*

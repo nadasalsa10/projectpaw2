@@ -47,6 +47,11 @@
             <nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
                 <a href="{{ route('customer.home') }}" class="hover:text-blue-200 transition">Beranda</a>
                 <a href="{{ route('customer.orders.index') }}" class="hover:text-blue-200 transition">Pesanan Saya</a>
+                @auth
+                    @if(Auth::user()->isCustomer())
+                        <a href="{{ route('customer.waiting_list.index') }}" class="hover:text-blue-200 transition">Daftar Tunggu</a>
+                    @endif
+                @endauth
                 <a href="{{ route('customer.help') }}" class="hover:text-blue-200 transition">Bantuan</a>
             </nav>
 
@@ -64,6 +69,7 @@
                         <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-100">
                             <a href="{{ route('customer.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-user mr-2 text-blue-600"></i> Profil Saya</a>
                             <a href="{{ route('customer.orders.index') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-ticket mr-2 text-blue-600"></i> Riwayat Pesanan</a>
+                            <a href="{{ route('customer.waiting_list.index') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-clipboard-list mr-2 text-blue-600"></i> Daftar Tunggu</a>
                             <hr class="my-1 border-gray-100">
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf

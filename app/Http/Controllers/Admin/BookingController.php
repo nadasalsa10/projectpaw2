@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\WaitingList;
 use Illuminate\Http\Request;
 
 class BookingController extends Controller
@@ -39,6 +40,14 @@ class BookingController extends Controller
         ]);
 
         $booking->update(['status' => $validated['status']]);
+
+        if (in_array($validated['status'], ['CANCELLED', 'EXPIRED'])) {
+            foreach ($booking->bookingTrips as $bt) {
+                if ($bt->schedule) {
+                    WaitingList::notifyWaitingUsers($bt->schedule);
+                }
+            }
+        }
 
         return back()->with('success', 'Status booking berhasil diperbarui.');
     }
