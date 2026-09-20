@@ -66,7 +66,14 @@
                             <span class="hidden md:inline font-medium text-sm">{{ Auth::user()->name }}</span>
                             <i class="fa-solid fa-chevron-down text-xs text-blue-200 hidden md:inline"></i>
                         </button>
-                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-100">
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-100">
+                            @if(Auth::user()->isDriver())
+                                <a href="{{ route('driver.dashboard') }}" class="block px-4 py-2 text-sm text-emerald-600 font-bold hover:bg-emerald-50"><i class="fa-solid fa-gauge mr-2"></i> Portal Driver</a>
+                                <hr class="my-1 border-gray-100">
+                            @elseif(Auth::user()->isAdmin())
+                                <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 text-sm text-purple-600 font-bold hover:bg-purple-50"><i class="fa-solid fa-shield mr-2"></i> Portal Admin</a>
+                                <hr class="my-1 border-gray-100">
+                            @endif
                             <a href="{{ route('customer.profile') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-user mr-2 text-blue-600"></i> Profil Saya</a>
                             <a href="{{ route('customer.orders.index') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-ticket mr-2 text-blue-600"></i> Riwayat Pesanan</a>
                             <a href="{{ route('customer.waiting_list.index') }}" class="block px-4 py-2 text-sm hover:bg-gray-100"><i class="fa-solid fa-clipboard-list mr-2 text-blue-600"></i> Daftar Tunggu</a>

@@ -3,29 +3,30 @@
 @section('title', 'Detail Pesanan ' . $booking->booking_code . ' - SIPP')
 
 @section('content')
-<div class="bg-blue-900 text-white py-6 px-4" x-data="customerOrderLive()" x-init="startPolling()">
-    <div class="max-w-3xl mx-auto flex justify-between items-center">
-        <div class="flex items-center space-x-3">
-            <a href="{{ route('customer.orders.index') }}" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-blue-700 flex items-center">
-                <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
-            </a>
-            <div>
-                <h1 class="text-lg font-bold">Detail Booking {{ $booking->booking_code }}</h1>
-                <p class="text-xs text-blue-200">Dibuat pada: {{ $booking->created_at->format('d M Y H:i') }}</p>
+<div x-data="customerOrderLive()" x-init="startPolling()">
+    <div class="bg-blue-900 text-white py-6 px-4">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('customer.orders.index') }}" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-blue-700 flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali
+                </a>
+                <div>
+                    <h1 class="text-lg font-bold">Detail Booking {{ $booking->booking_code }}</h1>
+                    <p class="text-xs text-blue-200">Dibuat pada: {{ $booking->created_at->format('d M Y H:i') }}</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="text-xs bg-blue-700 text-white font-bold px-3 py-1.5 rounded-full border border-blue-600 inline-block" x-text="bookingStatus">
+                    {{ $booking->status }}
+                </span>
+                <span class="flex items-center justify-end text-[10px] text-blue-200 font-semibold mt-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1.5 inline-block"></span> Live Tracking
+                </span>
             </div>
         </div>
-        <div class="text-right">
-            <span class="text-xs bg-blue-700 text-white font-bold px-3 py-1.5 rounded-full border border-blue-600 inline-block" x-text="bookingStatus">
-                {{ $booking->status }}
-            </span>
-            <span class="flex items-center justify-end text-[10px] text-blue-200 font-semibold mt-1">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1.5 inline-block"></span> Live Tracking
-            </span>
-        </div>
     </div>
-</div>
 
-<div class="max-w-3xl mx-auto px-4 py-8 space-y-6" x-data="customerOrderLive()" x-init="startPolling()">
+    <div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
     <!-- Trip Progress Stepper -->
     <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
@@ -153,13 +154,14 @@
             </form>
         </div>
     @endif
+    </div>
 </div>
 
 <script>
 function customerOrderLive() {
     return {
         bookingStatus: @js($booking->status),
-        currentStep: @js($currentStep),
+        currentStep: @js($currentStep ?? 1),
         driverName: @js($booking->bookingTrips->first()?->schedule?->driver?->user?->name ?? 'TBA'),
         pollTimer: null,
 

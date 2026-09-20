@@ -28,12 +28,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 2. Customer User
+        // 2. Official Customer User (M. Fadhil Anhar)
         $customerUser = User::firstOrCreate(
-            ['email' => 'customer@example.com'],
+            ['email' => 'mfadhilanhar@gmail.com'],
             [
-                'name' => 'Customer Demo',
-                'phone' => '088765432109',
+                'name' => 'M. Fadhil Anhar',
+                'phone' => '0895393859635',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
             ]
@@ -47,33 +47,24 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Drivers
-        $driversData = [
-            ['name' => 'Driver Demo', 'email' => 'driver@example.com', 'phone' => '081377776666', 'sim' => 'SIM-B1-99887766'],
-            ['name' => 'Driver Agus Subagyo', 'email' => 'driver.agus@example.com', 'phone' => '081388885555', 'sim' => 'SIM-B1-11223344'],
-            ['name' => 'Driver Bambang Heru', 'email' => 'driver.bambang@example.com', 'phone' => '081399994444', 'sim' => 'SIM-B1-55667788'],
-        ];
+        // 3. Official Driver (Nada Salsabilah)
+        $driverUser = User::firstOrCreate(
+            ['email' => 'neocity234@gmail.com'],
+            [
+                'name' => 'Nada Salsabilah',
+                'phone' => '089503215283',
+                'password' => Hash::make('password'),
+                'role' => 'driver',
+            ]
+        );
 
-        $createdDrivers = [];
-        foreach ($driversData as $dData) {
-            $u = User::firstOrCreate(
-                ['email' => $dData['email']],
-                [
-                    'name' => $dData['name'],
-                    'phone' => $dData['phone'],
-                    'password' => Hash::make('password'),
-                    'role' => 'driver',
-                ]
-            );
-
-            $createdDrivers[] = Driver::firstOrCreate(
-                ['user_id' => $u->id],
-                [
-                    'license_number' => $dData['sim'],
-                    'status' => 'ACTIVE',
-                ]
-            );
-        }
+        Driver::firstOrCreate(
+            ['user_id' => $driverUser->id],
+            [
+                'license_number' => 'SIM-A1-12345',
+                'status' => 'ACTIVE',
+            ]
+        );
 
         // 4. Vehicles & Seat Layouts
         $vehiclesData = [
@@ -163,6 +154,7 @@ class DatabaseSeeder extends Seeder
 
         // 6. Generate Multiple Varied Schedules per Day (Pagi, Siang, Sore, Malam)
         $today = Carbon::today();
+        $activeDrivers = Driver::where('status', 'ACTIVE')->get();
 
         // Varied time templates (Pagi, Siang, Sore, Malam)
         $baseSlots = [
@@ -195,7 +187,9 @@ class DatabaseSeeder extends Seeder
                     $hour = $slot['hour'] + (int) floor(($slot['minute'] + $minuteOffset) / 60);
 
                     // Rotate driver and vehicle across days and slots
-                    $driverObj = $createdDrivers[($routeIndex + $slotIdx + $dayOffset) % count($createdDrivers)];
+                    $driverObj = $activeDrivers->isNotEmpty()
+                        ? $activeDrivers[($routeIndex + $slotIdx + $dayOffset) % $activeDrivers->count()]
+                        : null;
                     $vehicleObj = $createdVehicles[($routeIndex + $slotIdx + $dayOffset) % count($createdVehicles)];
 
                     $depTime = $scheduleDate->copy()->setHour($hour)->setMinute($minute)->setSecond(0);
@@ -208,7 +202,7 @@ class DatabaseSeeder extends Seeder
                         ],
                         [
                             'vehicle_id' => $vehicleObj->id,
-                            'driver_id' => $driverObj->id,
+                            'driver_id' => $driverObj?->id,
                             'arrival_time' => $arrTime,
                             'price' => $route->base_price,
                             'status' => 'WAITING',

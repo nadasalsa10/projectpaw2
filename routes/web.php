@@ -36,9 +36,7 @@ Route::get('/search', [Customer\SearchController::class, 'search'])->name('custo
 Route::middleware(['auth'])->group(function () {
     Route::get('/tickets/{ticket}', [Customer\TicketController::class, 'show'])->name('customer.tickets.show');
     Route::get('/orders/{booking}', [Customer\OrderController::class, 'show'])->name('customer.orders.show');
-});
 
-Route::middleware(['auth', 'role:customer'])->group(function () {
     Route::get('/booking/select-seat', [Customer\BookingController::class, 'selectSeat'])->name('customer.booking.select_seat');
     Route::post('/booking/passengers', [Customer\BookingController::class, 'passengerForm'])->name('customer.booking.passengers');
     Route::post('/booking/summary', [Customer\BookingController::class, 'summary'])->name('customer.booking.summary');

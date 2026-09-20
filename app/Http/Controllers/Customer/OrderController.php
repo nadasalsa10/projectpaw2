@@ -48,7 +48,15 @@ class OrderController extends Controller
             'tickets.passenger',
         ]);
 
-        return view('customer.orders.show', compact('booking'));
+        $currentStep = match ($booking->status) {
+            'WAITING', 'WAITING_DEPARTURE', 'PAID', 'CONFIRMED', 'PENDING_PAYMENT', 'PAYMENT_PROCESSING' => 1,
+            'BOARDING' => 2,
+            'IN_TRANSIT' => 3,
+            'ARRIVED', 'COMPLETED' => 4,
+            default => 1,
+        };
+
+        return view('customer.orders.show', compact('booking', 'currentStep'));
     }
 
     public function cancel(Request $request, Booking $booking)
