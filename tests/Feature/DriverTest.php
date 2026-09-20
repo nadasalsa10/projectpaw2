@@ -189,4 +189,42 @@ class DriverTest extends TestCase
         $response->assertSee('Penumpang Agus');
         $response->assertSee('TKT-TEST-001');
     }
+
+    public function test_driver_can_access_live_bookings_api(): void
+    {
+        $this->actingAs($this->driverUser);
+
+        $response = $this->getJson('/driver/api/live-bookings');
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'driver_name' => 'Driver Agus',
+        ]);
+        $response->assertJsonStructure([
+            'success',
+            'driver_name',
+            'total_bookings',
+            'bookings',
+            'active_schedules_count',
+        ]);
+    }
+
+    public function test_driver_can_access_live_manifest_api(): void
+    {
+        $this->actingAs($this->driverUser);
+
+        $response = $this->getJson("/driver/api/schedules/{$this->schedule->id}/manifest");
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'total_passengers' => 1,
+        ]);
+        $response->assertJsonStructure([
+            'success',
+            'status',
+            'total_passengers',
+            'checked_in_count',
+            'tickets',
+        ]);
+    }
 }

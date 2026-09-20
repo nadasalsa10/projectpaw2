@@ -218,4 +218,35 @@ class BookingTest extends TestCase
         $this->assertEquals('ROUND_TRIP', $booking->trip_type);
         $this->assertCount(2, $booking->bookingTrips);
     }
+
+    public function test_customer_can_access_live_order_status_api(): void
+    {
+        $this->actingAs($this->customer);
+
+        $this->post('/booking/store', [
+            'outbound_schedule_id' => $this->schedule->id,
+            'trip_type' => 'ONE_WAY',
+            'outbound_seats' => [$this->seat1->id],
+            'payment_method' => 'BANK_TRANSFER',
+            'passengers' => [
+                ['name' => 'Penumpang Live Test', 'phone' => '08123456789'],
+            ],
+        ]);
+
+        $booking = Booking::latest()->first();
+
+        $response = $this->getJson("/orders/{$booking->id}/live-status");
+        $response->assertStatus(200);
+        $response->assertJson([
+            'status' => 'PENDING_PAYMENT',
+            'step' => 1,
+        ]);
+        $response->assertJsonStructure([
+            'status',
+            'step',
+            'driver_name',
+            'driver_phone',
+            'tickets',
+        ]);
+    }
 }

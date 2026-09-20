@@ -50,6 +50,7 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
 
     Route::get('/orders', [Customer\OrderController::class, 'index'])->name('customer.orders.index');
     Route::post('/orders/{booking}/cancel', [Customer\OrderController::class, 'cancel'])->name('customer.orders.cancel');
+    Route::get('/orders/{booking}/live-status', [Customer\OrderController::class, 'liveStatus'])->name('customer.orders.live_status');
 
     Route::get('/notifications', [Customer\OrderController::class, 'notifications'])->name('customer.notifications.index');
     Route::get('/profile', [Customer\ProfileController::class, 'show'])->name('customer.profile');
@@ -67,9 +68,11 @@ Route::middleware(['auth', 'role:customer'])->group(function () {
 */
 Route::middleware(['auth', 'role:driver'])->prefix('driver')->group(function () {
     Route::get('/dashboard', [Driver\DashboardController::class, 'index'])->name('driver.dashboard');
+    Route::get('/api/live-bookings', [Driver\DashboardController::class, 'liveBookings'])->name('driver.api.live_bookings');
     Route::get('/profile', [Driver\DashboardController::class, 'profile'])->name('driver.profile');
     Route::get('/schedules', [Driver\ScheduleController::class, 'index'])->name('driver.schedules');
     Route::get('/schedules/{schedule}', [Driver\ScheduleController::class, 'show'])->name('driver.schedules.show');
+    Route::get('/api/schedules/{schedule}/manifest', [Driver\ScheduleController::class, 'liveManifest'])->name('driver.api.live_manifest');
 
     Route::get('/scan', [Driver\ScanController::class, 'index'])->name('driver.scan');
     Route::post('/scan/validate', [Driver\ScanController::class, 'validateQr'])->name('driver.scan.validate');

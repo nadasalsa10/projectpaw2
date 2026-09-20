@@ -38,7 +38,50 @@ class ScheduleController extends Controller
             'tickets.booking',
         ]);
 
-        return view('driver.schedules.show', compact('schedule'));
+        $manifestArray = $schedule->tickets->map(function ($t) {
+            return [
+                'id' => $t->id,
+                'passenger_name' => $t->passenger?->name ?? 'Penumpang',
+                'passenger_phone' => $t->passenger?->phone ?? '-',
+                'seat_number' => $t->bookingSeat?->vehicleSeat?->seat_number ?? '-',
+                'booking_code' => $t->booking?->booking_code ?? '-',
+                'is_checked_in' => (bool) $t->is_checked_in,
+            ];
+        })->values()->toArray();
+
+        return view('driver.schedules.show', compact('schedule', 'manifestArray'));
+    }
+
+    public function liveManifest(Schedule $schedule)
+    {
+        $driver = Auth::user()->driver;
+
+        if (! $driver || $schedule->driver_id !== $driver->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $schedule->load([
+            'tickets.passenger',
+            'tickets.bookingSeat.vehicleSeat',
+            'tickets.booking',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'status' => $schedule->status,
+            'total_passengers' => $schedule->tickets->count(),
+            'checked_in_count' => $schedule->tickets->where('is_checked_in', true)->count(),
+            'tickets' => $schedule->tickets->map(function ($t) {
+                return [
+                    'id' => $t->id,
+                    'passenger_name' => $t->passenger?->name ?? 'Penumpang',
+                    'passenger_phone' => $t->passenger?->phone ?? '-',
+                    'seat_number' => $t->bookingSeat?->vehicleSeat?->seat_number ?? '-',
+                    'booking_code' => $t->booking?->booking_code ?? '-',
+                    'is_checked_in' => (bool) $t->is_checked_in,
+                ];
+            }),
+        ]);
     }
 
     public function reports(Request $request)

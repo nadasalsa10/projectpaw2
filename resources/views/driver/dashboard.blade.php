@@ -3,7 +3,7 @@
 @section('title', 'Dashboard Driver - SIPP')
 
 @section('content')
-<div class="space-y-4">
+<div class="space-y-4" x-data="driverDashboard()" x-init="startPolling()">
     <!-- Driver Info Banner -->
     <div class="bg-gray-800 border border-gray-700 rounded-2xl p-4 shadow">
         <div class="flex justify-between items-center">
@@ -12,50 +12,68 @@
                 <h2 class="text-base font-bold text-white">{{ Auth::user()->name }}</h2>
                 <p class="text-xs text-emerald-400 font-mono mt-0.5"><i class="fa-solid fa-id-card text-[10px] mr-1"></i> SIM: {{ $driver->license_number }}</p>
             </div>
-            <span class="text-xs bg-emerald-900/60 text-emerald-300 border border-emerald-600/40 px-3 py-1 rounded-full font-bold">
-                {{ $driver->status }}
-            </span>
+            <div class="text-right">
+                <span class="text-xs bg-emerald-900/60 text-emerald-300 border border-emerald-600/40 px-3 py-1 rounded-full font-bold inline-block">
+                    {{ $driver->status }}
+                </span>
+                <span class="flex items-center justify-end text-[10px] text-emerald-400 font-semibold mt-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1.5 inline-block"></span> Live Sync Aktif
+                </span>
+            </div>
         </div>
     </div>
 
     <!-- Live Customer Booking Alert (Real-Time Notification of New Customer Orders) -->
-    @if($recentCustomerBookings->count() > 0)
-        <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-gray-800 border-2 border-blue-500/60 rounded-2xl p-4 shadow-xl">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-[10px] bg-blue-500 text-white px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center">
-                    <i class="fa-solid fa-bell animate-bounce mr-1.5 text-xs"></i> Pesanan Penumpang Terbaru
+    <div class="bg-gradient-to-r from-blue-900 via-indigo-900 to-gray-800 border-2 border-blue-500/60 rounded-2xl p-4 shadow-xl">
+        <div class="flex justify-between items-center mb-3">
+            <span class="text-[10px] bg-blue-500 text-white px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center">
+                <i class="fa-solid fa-bell animate-bounce mr-1.5 text-xs"></i> Pesanan Penumpang Real-Time
+            </span>
+            <div class="flex items-center space-x-2">
+                <span class="text-[10px] text-blue-200 font-mono" x-text="bookings.length + ' Penumpang Masuk'">
+                    {{ $recentCustomerBookings->count() }} Penumpang Masuk
                 </span>
-                <span class="text-[10px] text-blue-200 font-mono">{{ $recentCustomerBookings->count() }} Penumpang Masuk</span>
+                <button @click="fetchBookings()" class="text-blue-300 hover:text-white text-xs p-1" title="Refresh Live">
+                    <i class="fa-solid fa-rotate" :class="{ 'fa-spin': isRefreshing }"></i>
+                </button>
             </div>
+        </div>
 
+        <!-- Alpine Live Rendered Bookings -->
+        <template x-if="bookings.length > 0">
             <div class="space-y-2">
-                @foreach($recentCustomerBookings as $tkt)
-                    <div class="bg-gray-900/80 border border-blue-700/50 rounded-xl p-3 flex justify-between items-center text-xs">
+                <template x-for="item in bookings" :key="item.id">
+                    <div class="bg-gray-900/80 border border-blue-700/50 rounded-xl p-3 flex justify-between items-center text-xs transition duration-300 hover:border-blue-400">
                         <div>
                             <div class="flex items-center space-x-2">
-                                <span class="bg-emerald-600 text-white font-black px-2 py-0.5 rounded text-[10px]">
-                                    Kursi {{ $tkt->bookingSeat?->vehicleSeat?->seat_number ?? '-' }}
-                                </span>
-                                <span class="font-bold text-white">{{ $tkt->passenger?->name ?? 'Penumpang' }}</span>
+                                <span class="bg-emerald-600 text-white font-black px-2 py-0.5 rounded text-[10px]" x-text="'Kursi ' + item.seat_number"></span>
+                                <span class="font-bold text-white" x-text="item.passenger_name"></span>
                             </div>
-                            <span class="text-[10px] text-blue-200 block mt-1">
-                                {{ $tkt->schedule?->route?->origin ?? '-' }} → {{ $tkt->schedule?->route?->destination ?? '-' }} | {{ $tkt->schedule?->departure_time ? $tkt->schedule->departure_time->format('d M H:i') : '-' }} WIB
-                            </span>
+                            <span class="text-[10px] text-blue-200 block mt-1" x-text="item.origin + ' → ' + item.destination + ' | ' + item.departure_time + ' WIB'"></span>
                         </div>
 
                         <div class="text-right">
-                            <span class="text-[10px] text-gray-400 font-mono block">{{ $tkt->booking?->booking_code ?? '-' }}</span>
-                            @if($tkt->is_checked_in)
+                            <span class="text-[10px] text-gray-400 font-mono block" x-text="item.booking_code"></span>
+                            <template x-if="item.is_checked_in">
                                 <span class="text-[10px] text-emerald-400 font-bold"><i class="fa-solid fa-check"></i> Checked-In</span>
-                            @else
+                            </template>
+                            <template x-if="!item.is_checked_in">
                                 <span class="text-[10px] text-amber-400 font-bold">Siap Boarding</span>
-                            @endif
+                            </template>
                         </div>
                     </div>
-                @endforeach
+                </template>
             </div>
-        </div>
-    @endif
+        </template>
+
+        <!-- Fallback if no bookings -->
+        <template x-if="bookings.length === 0">
+            <div class="text-center py-4 text-xs text-blue-200/80">
+                <i class="fa-regular fa-clock text-base block mb-1"></i>
+                Menunggu pesanan tiket dari penumpang baru...
+            </div>
+        </template>
+    </div>
 
     <!-- Active Trip Banner (If any) -->
     @if($activeTrip)
@@ -150,4 +168,39 @@
         </div>
     </div>
 </div>
+
+<script>
+function driverDashboard() {
+    return {
+        bookings: @js($recentBookingsArray),
+        isRefreshing: false,
+        pollTimer: null,
+
+        startPolling() {
+            this.pollTimer = setInterval(() => {
+                this.fetchBookings();
+            }, 3000);
+        },
+
+        async fetchBookings() {
+            this.isRefreshing = true;
+            try {
+                const res = await fetch("{{ route('driver.api.live_bookings') }}", {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.bookings) {
+                        this.bookings = data.bookings;
+                    }
+                }
+            } catch (err) {
+                console.error("Live sync error:", err);
+            } finally {
+                this.isRefreshing = false;
+            }
+        }
+    };
+}
+</script>
 @endsection

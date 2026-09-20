@@ -28,7 +28,7 @@ class TripController extends Controller
         $schedule->update(['status' => $newStatus]);
 
         // Also update corresponding booking statuses if trip status changes
-        if (in_array($newStatus, ['BOARDING', 'IN_TRANSIT', 'COMPLETED', 'CANCELLED'])) {
+        if (in_array($newStatus, ['BOARDING', 'IN_TRANSIT', 'ARRIVED', 'COMPLETED', 'CANCELLED'])) {
             foreach ($schedule->bookingTrips as $bt) {
                 if ($bt->booking) {
                     $bt->booking->update(['status' => $newStatus]);

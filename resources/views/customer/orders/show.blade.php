@@ -3,7 +3,7 @@
 @section('title', 'Detail Pesanan ' . $booking->booking_code . ' - SIPP')
 
 @section('content')
-<div class="bg-blue-900 text-white py-6 px-4">
+<div class="bg-blue-900 text-white py-6 px-4" x-data="customerOrderLive()" x-init="startPolling()">
     <div class="max-w-3xl mx-auto flex justify-between items-center">
         <div class="flex items-center space-x-3">
             <a href="{{ route('customer.orders.index') }}" class="bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-xl transition border border-blue-700 flex items-center">
@@ -14,43 +14,50 @@
                 <p class="text-xs text-blue-200">Dibuat pada: {{ $booking->created_at->format('d M Y H:i') }}</p>
             </div>
         </div>
-        <span class="text-xs bg-blue-700 text-white font-bold px-3 py-1.5 rounded-full border border-blue-600">
-            {{ $booking->status }}
-        </span>
+        <div class="text-right">
+            <span class="text-xs bg-blue-700 text-white font-bold px-3 py-1.5 rounded-full border border-blue-600 inline-block" x-text="bookingStatus">
+                {{ $booking->status }}
+            </span>
+            <span class="flex items-center justify-end text-[10px] text-blue-200 font-semibold mt-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping mr-1.5 inline-block"></span> Live Tracking
+            </span>
+        </div>
     </div>
 </div>
 
-<div class="max-w-3xl mx-auto px-4 py-8 space-y-6">
+<div class="max-w-3xl mx-auto px-4 py-8 space-y-6" x-data="customerOrderLive()" x-init="startPolling()">
 
     <!-- Trip Progress Stepper -->
-    @php
-        $statusOrder = ['WAITING' => 1, 'BOARDING' => 2, 'IN_TRANSIT' => 3, 'COMPLETED' => 4];
-        $currentStep = $statusOrder[$booking->status] ?? 1;
-    @endphp
     <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-        <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Status Perjalanan Real-Time</h2>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xs font-bold text-gray-500 uppercase tracking-wider">Status Perjalanan Real-Time</h2>
+            <span class="text-xs text-emerald-600 font-bold flex items-center">
+                <i class="fa-solid fa-satellite-dish mr-1 text-xs"></i> Pantauan Langsung Driver
+            </span>
+        </div>
+        
         <div class="flex justify-between items-center relative">
             <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gray-200 -z-0"></div>
-            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 -z-0 transition-all duration-500" style="width: {{ (($currentStep - 1) / 3) * 100 }}%"></div>
+            <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 -z-0 transition-all duration-500" :style="'width: ' + (((currentStep - 1) / 3) * 100) + '%'"></div>
 
             <!-- Step 1 -->
             <div class="flex flex-col items-center relative z-10">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs {{ $currentStep >= 1 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500' }}">1</div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300" :class="currentStep >= 1 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'">1</div>
                 <span class="text-[10px] font-bold mt-1 text-gray-700">Menunggu</span>
             </div>
             <!-- Step 2 -->
             <div class="flex flex-col items-center relative z-10">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs {{ $currentStep >= 2 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500' }}">2</div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300" :class="currentStep >= 2 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'">2</div>
                 <span class="text-[10px] font-bold mt-1 text-gray-700">Boarding</span>
             </div>
             <!-- Step 3 -->
             <div class="flex flex-col items-center relative z-10">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs {{ $currentStep >= 3 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500' }}">3</div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300" :class="currentStep >= 3 ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'">3</div>
                 <span class="text-[10px] font-bold mt-1 text-gray-700">Dalam Jalan</span>
             </div>
             <!-- Step 4 -->
             <div class="flex flex-col items-center relative z-10">
-                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs {{ $currentStep >= 4 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500' }}">4</div>
+                <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300" :class="currentStep >= 4 ? 'bg-emerald-600 text-white shadow-lg' : 'bg-gray-200 text-gray-500'">4</div>
                 <span class="text-[10px] font-bold mt-1 text-gray-700">Selesai</span>
             </div>
         </div>
@@ -86,7 +93,7 @@
                     </div>
                     <div>
                         <span class="text-[10px] text-emerald-400 font-bold uppercase block tracking-wider">Driver Penanggung Jawab</span>
-                        <h4 class="font-bold text-sm text-white">{{ $driverUser?->name ?? 'TBA' }}</h4>
+                        <h4 class="font-bold text-sm text-white" x-text="driverName">{{ $driverUser?->name ?? 'TBA' }}</h4>
                         <p class="text-xs text-gray-300 font-mono"><i class="fa-solid fa-phone text-[10px] mr-1"></i> {{ $driverUser?->phone ?? '-' }}</p>
                     </div>
                 </div>
@@ -147,4 +154,41 @@
         </div>
     @endif
 </div>
+
+<script>
+function customerOrderLive() {
+    return {
+        bookingStatus: @js($booking->status),
+        currentStep: @js($currentStep),
+        driverName: @js($booking->bookingTrips->first()?->schedule?->driver?->user?->name ?? 'TBA'),
+        pollTimer: null,
+
+        startPolling() {
+            this.pollTimer = setInterval(() => {
+                this.fetchStatus();
+            }, 3000);
+        },
+
+        async fetchStatus() {
+            try {
+                const res = await fetch("{{ route('customer.orders.live_status', $booking->id) }}", {
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status) {
+                        this.bookingStatus = data.status;
+                        this.currentStep = data.step;
+                        if (data.driver_name) {
+                            this.driverName = data.driver_name;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Order live sync error:", err);
+            }
+        }
+    };
+}
+</script>
 @endsection

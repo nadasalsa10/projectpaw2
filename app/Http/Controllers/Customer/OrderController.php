@@ -87,6 +87,36 @@ class OrderController extends Controller
         return redirect()->route('customer.orders.index')->with('success', 'Pesanan berhasil dibatalkan.');
     }
 
+    public function liveStatus(Booking $booking)
+    {
+        if ($booking->user_id !== Auth::id() && ! Auth::user()->isDriver() && ! Auth::user()->isAdmin()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $booking->load(['bookingTrips.schedule.driver.user', 'tickets.passenger', 'tickets.bookingSeat.vehicleSeat']);
+
+        $currentStep = match ($booking->status) {
+            'WAITING', 'WAITING_DEPARTURE', 'PAID', 'CONFIRMED' => 1,
+            'BOARDING' => 2,
+            'IN_TRANSIT' => 3,
+            'ARRIVED', 'COMPLETED' => 4,
+            default => 1,
+        };
+
+        return response()->json([
+            'status' => $booking->status,
+            'step' => $currentStep,
+            'driver_name' => $booking->bookingTrips->first()?->schedule?->driver?->user?->name ?? 'TBA',
+            'driver_phone' => $booking->bookingTrips->first()?->schedule?->driver?->user?->phone ?? null,
+            'tickets' => $booking->tickets->map(fn ($t) => [
+                'id' => $t->id,
+                'passenger_name' => $t->passenger?->name ?? 'Penumpang',
+                'seat_number' => $t->bookingSeat?->vehicleSeat?->seat_number ?? '-',
+                'is_checked_in' => (bool) $t->is_checked_in,
+            ]),
+        ]);
+    }
+
     public function notifications()
     {
         $notifications = Notification::where('user_id', Auth::id())
