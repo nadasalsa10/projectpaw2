@@ -80,4 +80,25 @@ class Schedule extends Model
     {
         return $this->available_seats_count <= 0;
     }
+
+    public static function rebalanceDriverAssignments(): void
+    {
+        $drivers = Driver::where('status', 'ACTIVE')->get();
+        if ($drivers->isEmpty()) {
+            return;
+        }
+
+        $driverCount = $drivers->count();
+        $schedules = self::where('status', 'WAITING')
+            ->where('departure_time', '>=', now())
+            ->orderBy('id', 'asc')
+            ->get();
+
+        foreach ($schedules as $idx => $schedule) {
+            $assignedDriver = $drivers[$idx % $driverCount];
+            if ($schedule->driver_id !== $assignedDriver->id) {
+                $schedule->update(['driver_id' => $assignedDriver->id]);
+            }
+        }
+    }
 }

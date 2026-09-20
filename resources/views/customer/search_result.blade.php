@@ -65,7 +65,7 @@
                                 @else
                                     <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats ?? $sch->available_seats_count }} Kursi</strong></span>
                                 @endif
-                                <span><i class="fa-solid fa-user text-gray-400 mr-1"></i> Driver: {{ $sch->driver?->user->name ?? 'TBA' }}</span>
+                                <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-medium border border-slate-200"><i class="fa-solid fa-id-card text-emerald-600 mr-1"></i> Driver: <strong>{{ $sch->driver?->user->name ?? 'TBA' }}</strong></span>
                             </div>
                         </div>
 
@@ -138,6 +138,7 @@
                                     @else
                                         <span><i class="fa-solid fa-chair text-emerald-600 mr-1"></i> Tersedia: <strong>{{ $sch->available_seats ?? $sch->available_seats_count }} Kursi</strong></span>
                                     @endif
+                                    <span class="bg-slate-100 text-slate-800 px-2 py-0.5 rounded font-medium border border-slate-200"><i class="fa-solid fa-id-card text-indigo-600 mr-1"></i> Driver: <strong>{{ $sch->driver?->user->name ?? 'TBA' }}</strong></span>
                                 </div>
                             </div>
 

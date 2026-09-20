@@ -47,24 +47,31 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Official Driver (Nada Salsabilah)
-        $driverUser = User::firstOrCreate(
-            ['email' => 'neocity234@gmail.com'],
-            [
-                'name' => 'Nada Salsabilah',
-                'phone' => '089503215283',
-                'password' => Hash::make('password'),
-                'role' => 'driver',
-            ]
-        );
+        // 3. Official Drivers (Nada Salsabilah & Aqila Nike Indriani)
+        $driversToSeed = [
+            ['name' => 'Nada Salsabilah', 'email' => 'neocity234@gmail.com', 'phone' => '089503215283', 'sim' => 'SIM-A1-12345'],
+            ['name' => 'Aqila Nike Indriani', 'email' => 'aqilanike@gmail.com', 'phone' => '0898478634345', 'sim' => 'SIM-A3-12345'],
+        ];
 
-        Driver::firstOrCreate(
-            ['user_id' => $driverUser->id],
-            [
-                'license_number' => 'SIM-A1-12345',
-                'status' => 'ACTIVE',
-            ]
-        );
+        foreach ($driversToSeed as $dData) {
+            $u = User::firstOrCreate(
+                ['email' => $dData['email']],
+                [
+                    'name' => $dData['name'],
+                    'phone' => $dData['phone'],
+                    'password' => Hash::make('password'),
+                    'role' => 'driver',
+                ]
+            );
+
+            Driver::firstOrCreate(
+                ['user_id' => $u->id],
+                [
+                    'license_number' => $dData['sim'],
+                    'status' => 'ACTIVE',
+                ]
+            );
+        }
 
         // 4. Vehicles & Seat Layouts
         $vehiclesData = [

@@ -56,11 +56,8 @@ class RegisterController extends Controller
                     'status' => 'ACTIVE',
                 ]);
 
-                // Automatically assign schedules to newly registered driver
-                $schedulesToAssign = Schedule::inRandomOrder()->take(25)->get();
-                foreach ($schedulesToAssign as $sch) {
-                    $sch->update(['driver_id' => $driver->id]);
-                }
+                // Automatically rebalance and distribute schedules evenly across all active drivers
+                Schedule::rebalanceDriverAssignments();
             }
 
             return $user;

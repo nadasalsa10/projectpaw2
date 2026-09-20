@@ -6,8 +6,8 @@
 <div class="space-y-4" x-data="driverManifest()" x-init="startPolling()">
     <!-- Top Back Navigation -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('driver.schedules') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
-            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Jadwal
+        <a href="{{ route('driver.reports') }}" class="inline-flex items-center text-xs font-bold text-gray-300 hover:text-white bg-gray-800 border border-gray-700 hover:bg-gray-700 px-3 py-1.5 rounded-xl transition shadow">
+            <i class="fa-solid fa-arrow-left mr-1.5"></i> Kembali ke Laporan
         </a>
         <div class="flex items-center space-x-2">
             <span class="flex items-center text-[10px] text-emerald-400 font-semibold">

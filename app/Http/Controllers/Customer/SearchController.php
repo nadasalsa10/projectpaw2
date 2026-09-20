@@ -35,6 +35,8 @@ class SearchController extends Controller
             $this->ensureSchedulesExist($outboundRoute, $departureDate);
         }
 
+        Schedule::rebalanceDriverAssignments();
+
         // Search Outbound Schedules
         $outboundSchedules = Schedule::whereHas('route', function ($q) use ($origin, $destination) {
             $q->where('origin', $origin)->where('destination', $destination);

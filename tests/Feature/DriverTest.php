@@ -188,6 +188,24 @@ class DriverTest extends TestCase
         $response->assertSee('Laporan Pemesanan');
         $response->assertSee('Penumpang Agus');
         $response->assertSee('TKT-TEST-001');
+
+        // Test filter by trip_active
+        $respActive = $this->get('/driver/reports?status=trip_active');
+        $respActive->assertStatus(200);
+        $respActive->assertSee('Penumpang Agus');
+
+        // Test filter by trip_completed
+        $respCompleted = $this->get('/driver/reports?status=trip_completed');
+        $respCompleted->assertStatus(200);
+
+        // Test filter by checked_in
+        $respChecked = $this->get('/driver/reports?status=checked_in');
+        $respChecked->assertStatus(200);
+
+        // Test filter by pending
+        $respPending = $this->get('/driver/reports?status=pending');
+        $respPending->assertStatus(200);
+        $respPending->assertSee('Penumpang Agus');
     }
 
     public function test_driver_can_access_live_bookings_api(): void

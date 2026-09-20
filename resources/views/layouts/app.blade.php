@@ -60,11 +60,32 @@
                 @auth
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
-                            <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white shadow">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                            </div>
-                            <span class="hidden md:inline font-medium text-sm">{{ Auth::user()->name }}</span>
-                            <i class="fa-solid fa-chevron-down text-xs text-blue-200 hidden md:inline"></i>
+                            @if(Auth::user()->isDriver())
+                                <div class="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow border border-emerald-400">
+                                    <i class="fa-solid fa-id-card-clip text-xs"></i>
+                                </div>
+                                <div class="text-left hidden md:block">
+                                    <span class="font-bold text-sm block leading-tight text-white">{{ Auth::user()->name }}</span>
+                                    <span class="text-[10px] text-emerald-300 font-semibold block leading-none">🚗 Akun Driver SIPP</span>
+                                </div>
+                            @elseif(Auth::user()->isAdmin())
+                                <div class="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center font-bold text-white shadow border border-purple-400">
+                                    <i class="fa-solid fa-shield text-xs"></i>
+                                </div>
+                                <div class="text-left hidden md:block">
+                                    <span class="font-bold text-sm block leading-tight text-white">{{ Auth::user()->name }}</span>
+                                    <span class="text-[10px] text-purple-300 font-semibold block leading-none">🛡️ Admin SIPP</span>
+                                </div>
+                            @else
+                                <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white shadow border border-blue-400">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </div>
+                                <div class="text-left hidden md:block">
+                                    <span class="font-bold text-sm block leading-tight text-white">{{ Auth::user()->name }}</span>
+                                    <span class="text-[10px] text-blue-200 font-semibold block leading-none">👤 Akun Penumpang</span>
+                                </div>
+                            @endif
+                            <i class="fa-solid fa-chevron-down text-xs text-blue-200 hidden md:inline ml-1"></i>
                         </button>
                         <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-52 bg-white text-gray-800 rounded-lg shadow-xl py-2 z-50 border border-gray-100">
                             @if(Auth::user()->isDriver())
@@ -91,6 +112,24 @@
             </div>
         </div>
     </header>
+
+    @auth
+        @if(Auth::user()->isDriver())
+            <div class="bg-emerald-950 border-b border-emerald-800 text-emerald-200 px-4 py-2 text-xs shadow-inner">
+                <div class="max-w-6xl mx-auto flex justify-between items-center flex-wrap gap-2">
+                    <span class="flex items-center font-medium">
+                        <i class="fa-solid fa-id-card-clip text-emerald-400 mr-2 text-sm"></i>
+                        Anda sedang login dengan <strong class="text-white mx-1">Akun Pengemudi ({{ Auth::user()->name }})</strong>.
+                    </span>
+                    <div class="flex items-center space-x-2">
+                        <a href="{{ route('driver.dashboard') }}" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1 rounded-lg transition shadow text-[11px]">
+                            <i class="fa-solid fa-gauge mr-1"></i> Buka Portal Driver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endauth
 
     <!-- Global Alerts -->
     @if(session('success'))

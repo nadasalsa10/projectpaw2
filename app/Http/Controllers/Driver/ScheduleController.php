@@ -104,6 +104,14 @@ class ScheduleController extends Controller
                 $query->where('is_checked_in', true);
             } elseif ($request->status === 'pending') {
                 $query->where('is_checked_in', false);
+            } elseif ($request->status === 'trip_active') {
+                $query->whereHas('schedule', function ($q) {
+                    $q->whereIn('status', ['WAITING', 'BOARDING', 'IN_TRANSIT', 'ARRIVED']);
+                });
+            } elseif ($request->status === 'trip_completed') {
+                $query->whereHas('schedule', function ($q) {
+                    $q->where('status', 'COMPLETED');
+                });
             }
         }
 
@@ -116,12 +124,15 @@ class ScheduleController extends Controller
         $tickets = $query->orderBy('created_at', 'desc')->get();
 
         // Calculate summary metrics
-        $allTickets = Ticket::whereHas('schedule', fn ($q) => $q->where('driver_id', $driver->id))->get();
+        $allTickets = Ticket::whereHas('schedule', fn ($q) => $q->where('driver_id', $driver->id))->with('schedule')->get();
         $totalTicketsCount = $allTickets->count();
         $checkedInCount = $allTickets->where('is_checked_in', true)->count();
         $pendingCount = $allTickets->where('is_checked_in', false)->count();
+        $tripActiveCount = $allTickets->filter(fn ($t) => in_array($t->schedule?->status, ['WAITING', 'BOARDING', 'IN_TRANSIT', 'ARRIVED']))->count();
+        $tripCompletedCount = $allTickets->filter(fn ($t) => $t->schedule?->status === 'COMPLETED')->count();
 
         $schedulesCount = Schedule::where('driver_id', $driver->id)->count();
+        $activeSchedulesCount = Schedule::where('driver_id', $driver->id)->whereIn('status', ['WAITING', 'BOARDING', 'IN_TRANSIT', 'ARRIVED'])->count();
         $completedSchedulesCount = Schedule::where('driver_id', $driver->id)->where('status', 'COMPLETED')->count();
 
         return view('driver.reports', compact(
@@ -129,7 +140,10 @@ class ScheduleController extends Controller
             'totalTicketsCount',
             'checkedInCount',
             'pendingCount',
+            'tripActiveCount',
+            'tripCompletedCount',
             'schedulesCount',
+            'activeSchedulesCount',
             'completedSchedulesCount'
         ));
     }
