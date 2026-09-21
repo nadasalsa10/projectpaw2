@@ -245,4 +245,24 @@ class DriverTest extends TestCase
             'tickets',
         ]);
     }
+
+    public function test_driver_can_update_gps_location(): void
+    {
+        $this->actingAs($this->driverUser);
+
+        $response = $this->postJson("/driver/schedules/{$this->schedule->id}/location", [
+            'latitude' => -2.976073,
+            'longitude' => 104.775431,
+            'speed' => 65,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->schedule->refresh();
+        $this->assertEquals(-2.976073, $this->schedule->current_latitude);
+        $this->assertEquals(104.775431, $this->schedule->current_longitude);
+        $this->assertEquals(65, $this->schedule->current_speed);
+        $this->assertNotNull($this->schedule->last_location_update);
+    }
 }

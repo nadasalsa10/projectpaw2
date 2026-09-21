@@ -79,6 +79,7 @@ Route::middleware(['auth', 'role:driver'])->prefix('driver')->group(function () 
     Route::get('/reports', [Driver\ScheduleController::class, 'reports'])->name('driver.reports');
 
     Route::post('/schedules/{schedule}/status', [Driver\TripController::class, 'updateStatus'])->name('driver.trip.status');
+    Route::post('/schedules/{schedule}/location', [Driver\TripController::class, 'updateLocation'])->name('driver.trip.location');
 });
 
 /*

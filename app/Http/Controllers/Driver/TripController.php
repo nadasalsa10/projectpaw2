@@ -71,4 +71,32 @@ class TripController extends Controller
 
         return back()->with('success', 'Status perjalanan berhasil diperbarui menjadi '.$newStatus);
     }
+
+    public function updateLocation(Request $request, Schedule $schedule)
+    {
+        $driver = Auth::user()->driver;
+
+        if ($schedule->driver_id !== $driver?->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'speed' => ['nullable', 'numeric', 'min:0'],
+        ]);
+
+        $schedule->update([
+            'current_latitude' => $validated['latitude'],
+            'current_longitude' => $validated['longitude'],
+            'current_speed' => (int) ($validated['speed'] ?? 0),
+            'last_location_update' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Koordinat GPS armada berhasil diperbarui.',
+            'timestamp' => now()->format('H:i:s'),
+        ]);
+    }
 }

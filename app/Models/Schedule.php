@@ -20,6 +20,10 @@ class Schedule extends Model
         'price',
         'status',
         'is_extra',
+        'current_latitude',
+        'current_longitude',
+        'current_speed',
+        'last_location_update',
     ];
 
     protected function casts(): array
@@ -27,8 +31,12 @@ class Schedule extends Model
         return [
             'departure_time' => 'datetime',
             'arrival_time' => 'datetime',
+            'last_location_update' => 'datetime',
             'price' => 'decimal:2',
             'is_extra' => 'boolean',
+            'current_latitude' => 'float',
+            'current_longitude' => 'float',
+            'current_speed' => 'integer',
         ];
     }
 

@@ -17,22 +17,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Admin User
-        User::firstOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin SIPP',
-                'phone' => '081234567890',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-            ]
-        );
-
-        // 2. Official Customer User (M. Fadhil Anhar)
+        // 1. Official Customer User (Customer Demo)
         $customerUser = User::firstOrCreate(
-            ['email' => 'mfadhilanhar@gmail.com'],
+            ['email' => 'customerdemo@gmail.com'],
             [
-                'name' => 'M. Fadhil Anhar',
+                'name' => 'Customer Demo',
                 'phone' => '0895393859635',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
@@ -47,8 +36,9 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 3. Official Drivers (Nada Salsabilah & Aqila Nike Indriani)
+        // 3. Official Drivers (Driver Demo, Nada Salsabilah & Aqila Nike Indriani)
         $driversToSeed = [
+            ['name' => 'Driver Demo', 'email' => 'driverdemo@gmail.com', 'phone' => '081234567802', 'sim' => 'SIM-A1-00001'],
             ['name' => 'Nada Salsabilah', 'email' => 'neocity234@gmail.com', 'phone' => '089503215283', 'sim' => 'SIM-A1-12345'],
             ['name' => 'Aqila Nike Indriani', 'email' => 'aqilanike@gmail.com', 'phone' => '0898478634345', 'sim' => 'SIM-A3-12345'],
         ];

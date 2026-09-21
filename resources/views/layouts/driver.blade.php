@@ -28,6 +28,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- HTML5 QRCode Scanner Library -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    @stack('styles')
 </head>
 <body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen pb-20">
     <!-- Header -->

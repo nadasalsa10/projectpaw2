@@ -246,6 +246,7 @@ class BookingTest extends TestCase
             'step',
             'driver_name',
             'driver_phone',
+            'tracking',
             'tickets',
         ]);
     }

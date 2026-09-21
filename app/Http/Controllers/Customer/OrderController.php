@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\BookingSeat;
 use App\Models\Notification;
 use App\Models\WaitingList;
+use App\Services\GeoLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,10 @@ class OrderController extends Controller
             default => 1,
         };
 
-        return view('customer.orders.show', compact('booking', 'currentStep'));
+        $primarySchedule = $booking->bookingTrips->first()?->schedule;
+        $initialTracking = $primarySchedule ? GeoLocationService::getLiveTrackingData($primarySchedule) : null;
+
+        return view('customer.orders.show', compact('booking', 'currentStep', 'initialTracking'));
     }
 
     public function cancel(Request $request, Booking $booking)
@@ -111,11 +115,15 @@ class OrderController extends Controller
             default => 1,
         };
 
+        $primarySchedule = $booking->bookingTrips->first()?->schedule;
+        $trackingData = $primarySchedule ? GeoLocationService::getLiveTrackingData($primarySchedule) : null;
+
         return response()->json([
             'status' => $booking->status,
             'step' => $currentStep,
             'driver_name' => $booking->bookingTrips->first()?->schedule?->driver?->user?->name ?? 'TBA',
             'driver_phone' => $booking->bookingTrips->first()?->schedule?->driver?->user?->phone ?? null,
+            'tracking' => $trackingData,
             'tickets' => $booking->tickets->map(fn ($t) => [
                 'id' => $t->id,
                 'passenger_name' => $t->passenger?->name ?? 'Penumpang',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Driver;
 use App\Http\Controllers\Controller;
 use App\Models\Schedule;
 use App\Models\Ticket;
+use App\Services\GeoLocationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -49,7 +50,9 @@ class ScheduleController extends Controller
             ];
         })->values()->toArray();
 
-        return view('driver.schedules.show', compact('schedule', 'manifestArray'));
+        $initialTracking = GeoLocationService::getLiveTrackingData($schedule);
+
+        return view('driver.schedules.show', compact('schedule', 'manifestArray', 'initialTracking'));
     }
 
     public function liveManifest(Schedule $schedule)
@@ -66,11 +69,14 @@ class ScheduleController extends Controller
             'tickets.booking',
         ]);
 
+        $trackingData = GeoLocationService::getLiveTrackingData($schedule);
+
         return response()->json([
             'success' => true,
             'status' => $schedule->status,
             'total_passengers' => $schedule->tickets->count(),
             'checked_in_count' => $schedule->tickets->where('is_checked_in', true)->count(),
+            'tracking' => $trackingData,
             'tickets' => $schedule->tickets->map(function ($t) {
                 return [
                     'id' => $t->id,

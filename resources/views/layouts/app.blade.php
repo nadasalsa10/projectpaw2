@@ -28,6 +28,7 @@
     <!-- FontAwesome & Alpine.js -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @stack('styles')
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen pb-20 md:pb-0">
     <!-- Navbar Top Desktop & Header -->
