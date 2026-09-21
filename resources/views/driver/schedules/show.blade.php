@@ -293,12 +293,21 @@ function driverManifest() {
                 </div>
             `, [44, 44]);
 
-            this.routePolyline = L.polyline(waypoints, {
-                color: '#10b981',
-                weight: 5,
-                opacity: 0.85,
+            // Draw Multi-layer Real Road Polyline (Road Glow + Core Line)
+            this.routeGlowPolyline = L.polyline(waypoints, {
+                color: '#34d399',
+                weight: 9,
+                opacity: 0.35,
                 lineJoin: 'round',
-                dashArray: '8, 8'
+                lineCap: 'round'
+            }).addTo(this.map);
+
+            this.routePolyline = L.polyline(waypoints, {
+                color: '#059669',
+                weight: 5,
+                opacity: 0.95,
+                lineJoin: 'round',
+                lineCap: 'round'
             }).addTo(this.map);
 
             this.originMarker = L.marker(originCoords, { icon: originIcon }).addTo(this.map)
@@ -312,9 +321,32 @@ function driverManifest() {
 
             this.fitDriverRouteBounds();
 
+            // Client-side high-resolution real road alignment
+            this.fetchExactClientRoad(originCoords, destCoords);
+
             window.addEventListener('resize', () => {
                 if (this.map) this.map.invalidateSize();
             });
+        },
+
+        async fetchExactClientRoad(origin, dest) {
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${origin[1]},${origin[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.routes && data.routes[0] && data.routes[0].geometry) {
+                        const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                        if (coords.length > 0) {
+                            this.routePolyline.setLatLngs(coords);
+                            this.routeGlowPolyline.setLatLngs(coords);
+                            this.tracking.waypoints = coords;
+                        }
+                    }
+                }
+            } catch (e) {
+                // Fallback already drawn
+            }
         },
 
         fitDriverRouteBounds() {

@@ -114,7 +114,8 @@ class GeoLocationService
     }
 
     /**
-     * Generate route waypoints polyline between Origin and Destination
+     * Generate actual driving road waypoints polyline between Origin and Destination
+     * Uses OSRM (Open Source Routing Machine) road network with fallback and caching.
      *
      * @return array<int, array{0: float, 1: float}>
      */
@@ -123,6 +124,64 @@ class GeoLocationService
         $start = self::getCityCoordinates($origin);
         $end = self::getCityCoordinates($destination);
 
+        $cacheKey = 'sipp_route_road_v2_'.md5(strtolower($origin.'_'.$destination));
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 86400 * 7, function () use ($start, $end, $origin, $destination) {
+            try {
+                $url = sprintf(
+                    'https://router.project-osrm.org/route/v1/driving/%F,%F;%F,%F?overview=full&geometries=geojson',
+                    $start['lng'],
+                    $start['lat'],
+                    $end['lng'],
+                    $end['lat']
+                );
+
+                $response = \Illuminate\Support\Facades\Http::timeout(5)->get($url);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $coords = $data['routes'][0]['geometry']['coordinates'] ?? [];
+
+                    if (! empty($coords)) {
+                        $latLngs = array_map(fn ($c) => [(float) $c[1], (float) $c[0]], $coords);
+                        $total = count($latLngs);
+
+                        // Downsample intelligently to ~250 high-precision vertices for smooth rendering
+                        if ($total > 250) {
+                            $step = (int) ceil($total / 250);
+                            $sampled = [];
+                            for ($i = 0; $i < $total; $i += $step) {
+                                $sampled[] = $latLngs[$i];
+                            }
+                            // Always ensure exact destination vertex is included at the end
+                            $lastPoint = end($latLngs);
+                            if (end($sampled) !== $lastPoint) {
+                                $sampled[] = $lastPoint;
+                            }
+
+                            return $sampled;
+                        }
+
+                        return $latLngs;
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore network error and fallback to corridor waypoints
+            }
+
+            return self::getFallbackCorridorWaypoints($start, $end, $origin, $destination);
+        });
+    }
+
+    /**
+     * Fallback intermediate waypoints if routing service is offline
+     *
+     * @param array{lat: float, lng: float, name: string} $start
+     * @param array{lat: float, lng: float, name: string} $end
+     * @return array<int, array{0: float, 1: float}>
+     */
+    protected static function getFallbackCorridorWaypoints(array $start, array $end, string $origin, string $destination): array
+    {
         $intermediate = [];
         $pair = strtolower($origin.'-'.$destination);
 
